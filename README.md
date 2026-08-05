@@ -12,14 +12,10 @@ This project is a management system for community sports clubs, covering:
 - Attendance tracking
 - Admin reporting
 
-## Tech Stack (TBD)
-
-The tech stack has not been finalized by the team yet. It will likely be:
+## Tech Stack
 
 - **Backend:** C# (ASP.NET Core Web API)
 - **Frontend:** React
-
-This section will be updated once the team confirms the final stack.
 
 ## Folder Structure
 
