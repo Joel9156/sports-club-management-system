@@ -25,10 +25,23 @@ The system shall provide notifications for important updates such as team alloca
 ## 2. Non-Functional Requirements
 
 ### 2.1 Security
-...
+The system shall protect player and volunteer information from unauthorised access.
 
 ### 2.2 Performance
-...
+The system should provide fast responses when users access player, team and attendance information.
+
+### 2.3 Usability
+The system should have a simple and user-friendly interface.
+
+### 2.4 Reliability
+The system should maintain accurate and consistent records.
+
+### 2.5 Scalability
+The system should support increasing numbers of players, volunteers and teams.
+
+### 2.6 Maintainability
+The system should be designed so that future updates and improvements can be implemented easily.
+
 
 ## 3. Quality Analysis
 
