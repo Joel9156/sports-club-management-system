@@ -1,0 +1,11 @@
+@SportsClubApi_HostAddress = http://localhost:5235
+
+GET {{SportsClubApi_HostAddress}}/api/players/
+Accept: application/json
+
+###
+
+GET {{SportsClubApi_HostAddress}}/api/teams/
+Accept: application/json
+
+###
