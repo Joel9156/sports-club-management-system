@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SportsClubApi.Data;
@@ -5,8 +6,13 @@ using SportsClubApi.Models;
 
 namespace SportsClubApi.Controllers;
 
+// Route-level protection only for now: any authenticated role can read player
+// data, and writes are restricted by role. Scoping reads/writes down to "a
+// player's own record" or "a coach's own team" is deferred - see
+// docs/03-proposed-solution.md and the Step 2 discussion for context.
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class PlayersController : ControllerBase
 {
     private readonly AppDbContext _context;
@@ -38,7 +44,10 @@ public class PlayersController : ControllerBase
     }
 
     // POST: api/players
+    // Admins register players on behalf of the club; Players can also submit
+    // their own registration (docs/03-proposed-solution.md - Player Registration).
     [HttpPost]
+    [Authorize(Roles = "Admin,Player")]
     public async Task<ActionResult<Player>> CreatePlayer(Player player)
     {
         _context.Players.Add(player);
@@ -49,6 +58,7 @@ public class PlayersController : ControllerBase
 
     // PUT: api/players/5
     [HttpPut("{id:int}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdatePlayer(int id, Player player)
     {
         if (id != player.Id)
@@ -77,6 +87,7 @@ public class PlayersController : ControllerBase
 
     // DELETE: api/players/5
     [HttpDelete("{id:int}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeletePlayer(int id)
     {
         var player = await _context.Players.FindAsync(id);

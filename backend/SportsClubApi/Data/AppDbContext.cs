@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<Volunteer> Volunteers => Set<Volunteer>();
     public DbSet<Team> Teams => Set<Team>();
     public DbSet<Attendance> Attendances => Set<Attendance>();
+    public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -29,5 +30,16 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(a => a.PlayerId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Email is the login identifier, so it must be unique.
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
+
+        // Store the role as its string name (e.g. "Admin") rather than an int
+        // so the database is readable directly, matching the "role" claim value.
+        modelBuilder.Entity<User>()
+            .Property(u => u.Role)
+            .HasConversion<string>();
     }
 }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SportsClubApi.Data;
@@ -7,6 +8,7 @@ namespace SportsClubApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class TeamsController : ControllerBase
 {
     private readonly AppDbContext _context;
@@ -38,7 +40,9 @@ public class TeamsController : ControllerBase
     }
 
     // POST: api/teams
+    // Team creation is an administrative action.
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<Team>> CreateTeam(Team team)
     {
         _context.Teams.Add(team);
