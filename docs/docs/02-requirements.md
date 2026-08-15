@@ -122,3 +122,24 @@ The system will be assessed using the following quality criteria:
 * The system can provide important notifications to relevant users.
 * Notifications should relate to events such as registration, team allocation or other important updates.
 
+## 6. Requirements Traceability Matrix
+
+The Requirements Traceability Matrix (RTM) links the main system requirements with their quality expectations and planned testing activities. This helps the team confirm that each important requirement is implemented and tested.
+
+| ID     | Requirement                                                    | Type           | Quality Attribute      | Planned Test                    |
+| ------ | -------------------------------------------------------------- | -------------- | ---------------------- | ------------------------------- |
+| FR-01  | Users can securely log in to the system                        | Functional     | Security               | Valid and invalid login testing |
+| FR-02  | Administrators can register and manage players                 | Functional     | Accuracy, Usability    | Player registration testing     |
+| FR-03  | Administrators can register and manage volunteers              | Functional     | Accuracy, Usability    | Volunteer management testing    |
+| FR-04  | Authorised users can allocate players to teams                 | Functional     | Correctness            | Team allocation testing         |
+| FR-05  | Coaches or administrators can record attendance                | Functional     | Reliability, Accuracy  | Attendance recording testing    |
+| FR-06  | Users can view reports and dashboards                          | Functional     | Performance, Usability | Report and dashboard testing    |
+| FR-07  | The system provides relevant notifications                     | Functional     | Reliability            | Notification testing            |
+| NFR-01 | Sensitive information is protected from unauthorised access    | Non-functional | Security               | Role-based access testing       |
+| NFR-02 | The system responds within an acceptable time                  | Non-functional | Performance            | Performance testing             |
+| NFR-03 | The interface is simple and easy to understand                 | Non-functional | Usability              | User acceptance testing         |
+| NFR-04 | Records remain accurate and consistent                         | Non-functional | Reliability            | Data integrity testing          |
+| NFR-05 | The system can support increasing numbers of users and records | Non-functional | Scalability            | Scalability testing             |
+| NFR-06 | The system can be updated and maintained efficiently           | Non-functional | Maintainability        | Code and documentation review   |
+
+
