@@ -16,4 +16,10 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Lets SportsClubApi.Tests reference the top-level Program class (implicitly
+         internal) so it can boot the app via WebApplicationFactory<Program>. -->
+    <InternalsVisibleTo Include="SportsClubApi.Tests" />
+  </ItemGroup>
+
 </Project>
