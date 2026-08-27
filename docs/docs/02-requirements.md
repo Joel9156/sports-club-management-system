@@ -65,6 +65,24 @@ The system should provide a clear and simple interface so that administrators, c
 
 The system should store information consistently and make sure that saved records remain available when users need them.
 
+## Requirements Review and Refinement
+
+The requirements were reviewed to make sure they are clear, consistent, realistic and testable. Each functional and non-functional requirement has an ID so it can be linked to acceptance criteria and test cases.
+
+Some requirements were also improved to make them easier to test. For example, instead of saying that the system should "manage players", the requirement states that administrators should be able to register and maintain player records.
+
+### Updated Acceptance Criteria
+
+- **FR-01 Authentication:** Valid login details should allow the user to access the system, while invalid details should be rejected.
+- **FR-02 Player Registration:** Valid player information should create a player record. Missing required information should show a validation message.
+- **FR-03 Volunteer Management:** Administrators should be able to add and update volunteer records.
+- **FR-04 Team Allocation:** A player should appear under the correct team after the allocation is saved.
+- **FR-05 Attendance:** Coaches or administrators should be able to record and view player attendance.
+- **FR-06 Reports and Dashboard:** The dashboard should display the correct information from stored records.
+- **FR-07 Notifications:** Relevant users should receive notifications when the notification feature is implemented.
+
+These acceptance criteria will be used to create and review test cases during testing.
+
 ## 4. Quality Criteria
 
 The system will be assessed using the following quality criteria:
