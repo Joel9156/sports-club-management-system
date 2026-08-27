@@ -270,3 +270,13 @@ For example:
 | User authentication    | Valid and invalid login tests               |
 | Security               | Role-based access tests                     |
 | Reports and dashboards | Data display and retrieval tests            |
+
+## 14. Current Testing Progress
+
+Initial testing has been carried out on authentication, player registration, volunteer management, team allocation, dashboard functionality and role-based access.
+
+Both positive and negative test scenarios have been used. For example, login was tested with valid and invalid credentials, while player registration was tested with valid information and missing required fields.
+
+Testing has also identified defects in the current prototype. One issue was found where the team name was displayed as an ID after team allocation. Another issue was found where players registered through the registration page were not correctly reflected in the dashboard player count. These defects have been recorded using GitHub Issues so they can be tracked, fixed and retested.
+
+Attendance, notifications, performance and scalability require further testing as the prototype develops.
