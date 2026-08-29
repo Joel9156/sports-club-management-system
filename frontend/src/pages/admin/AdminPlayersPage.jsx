@@ -48,7 +48,6 @@ function AdminPlayersPage() {
         <thead>
           <tr>
             <th>Name</th>
-            <th>Team</th>
             <th>Active</th>
             <th></th>
           </tr>
@@ -57,7 +56,6 @@ function AdminPlayersPage() {
           {players.map((p) => (
             <tr key={p.id}>
               <td>{p.fullName}</td>
-              <td>{p.teamId ?? '—'}</td>
               <td>{p.isActive ? 'Yes' : 'No'}</td>
               <td>
                 <button type="button" onClick={() => setEditing(p)}>

@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react'
-import { getTeams } from '../api/teams'
 
-// Fields match backend/SportsClubApi/Models/Player.cs exactly.
+// Fields match backend/SportsClubApi/Models/Player.cs, minus teamId - Mt Eden
+// FC is a single-team club, so there's no team to assign a player to.
 const blank = {
   fullName: '',
   dateOfBirth: '',
   email: '',
   phone: '',
-  teamId: '',
   registrationDate: new Date().toISOString().slice(0, 10),
   isActive: true,
 }
@@ -23,12 +22,7 @@ const blank = {
 // it's for switching which existing record is being edited (Admin CRUD) and
 // does re-apply whenever it changes.
 function PlayerForm({ initial, defaultEmail, onSubmit, submitLabel }) {
-  const [teams, setTeams] = useState([])
   const [form, setForm] = useState(() => initial ?? { ...blank, email: defaultEmail ?? '' })
-
-  useEffect(() => {
-    getTeams().then(setTeams).catch(() => {})
-  }, [])
 
   useEffect(() => {
     if (initial) setForm(initial)
@@ -43,7 +37,7 @@ function PlayerForm({ initial, defaultEmail, onSubmit, submitLabel }) {
 
   function handleSubmit(e) {
     e.preventDefault()
-    onSubmit({ ...form, teamId: form.teamId ? Number(form.teamId) : null })
+    onSubmit({ ...form, teamId: null })
   }
 
   return (
@@ -63,17 +57,6 @@ function PlayerForm({ initial, defaultEmail, onSubmit, submitLabel }) {
       <label>
         Phone
         <input value={form.phone} onChange={update('phone')} required />
-      </label>
-      <label>
-        Team
-        <select value={form.teamId ?? ''} onChange={update('teamId')}>
-          <option value="">Unassigned</option>
-          {teams.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name} ({t.ageGroup})
-            </option>
-          ))}
-        </select>
       </label>
       <label className="checkbox">
         <input type="checkbox" checked={form.isActive} onChange={update('isActive')} />

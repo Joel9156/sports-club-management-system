@@ -5,7 +5,7 @@ import logo from '../assets/mt-eden-fc-logo.svg'
 const NAV_LINKS = {
   Player: [
     ['/players/register', 'Register'],
-    ['/players/team', 'My Team'],
+    ['/players/team', 'Roster'],
   ],
   Volunteer: [
     ['/volunteers/profile', 'Profile'],
@@ -19,7 +19,6 @@ const NAV_LINKS = {
     ['/admin/dashboard', 'Dashboard'],
     ['/admin/players', 'Players'],
     ['/admin/volunteers', 'Volunteers'],
-    ['/admin/teams', 'Teams'],
   ],
 }
 

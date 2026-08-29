@@ -13,7 +13,6 @@ import CoachAttendancePage from './pages/coaches/CoachAttendancePage'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 import AdminPlayersPage from './pages/admin/AdminPlayersPage'
 import AdminVolunteersPage from './pages/admin/AdminVolunteersPage'
-import AdminTeamsPage from './pages/admin/AdminTeamsPage'
 import './App.css'
 
 const ROLE_HOME = {
@@ -55,7 +54,6 @@ function AppRoutes() {
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         <Route path="/admin/players" element={<AdminPlayersPage />} />
         <Route path="/admin/volunteers" element={<AdminVolunteersPage />} />
-        <Route path="/admin/teams" element={<AdminTeamsPage />} />
       </Route>
 
       <Route path="/" element={<Home />} />
