@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import logo from '../assets/mt-eden-fc-logo.svg'
 
 const NAV_LINKS = {
   Player: [
@@ -33,7 +34,8 @@ function NavBar() {
 
   return (
     <nav className="navbar">
-      <span className="brand">Sports Club</span>
+      <img src={logo} alt="Mt Eden FC" className="brand-logo" />
+      <span className="brand">Mt Eden FC</span>
       {user &&
         (NAV_LINKS[user.role] ?? []).map(([to, label]) => (
           <Link key={to} to={to}>

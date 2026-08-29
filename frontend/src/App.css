@@ -6,6 +6,9 @@
   gap: 16px;
   padding: 12px 20px;
   border-bottom: 1px solid var(--border);
+  /* Sits on top of body's background image (see index.css), so it needs its
+     own near-opaque background to stay readable rather than blending in. */
+  background: var(--bg-translucent);
 }
 
 .navbar .brand {
@@ -37,8 +40,13 @@
   text-align: left;
   max-width: 900px;
   width: 100%;
-  margin: 0 auto;
+  margin: 24px auto;
   box-sizing: border-box;
+  /* Floats as a card over body's background image (see index.css) instead of
+     the page content sitting directly on top of it. */
+  background: var(--bg-translucent);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
 }
 
 .page-narrow {
@@ -147,4 +155,17 @@ td {
   font-size: 28px;
   font-weight: 600;
   color: var(--text-h);
+}
+
+.brand-logo {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.login-logo {
+  width: 72px;
+  height: 72px;
+  display: block;
+  margin: 0 auto 12px;
 }

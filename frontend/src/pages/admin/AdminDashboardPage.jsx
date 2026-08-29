@@ -37,6 +37,8 @@ function AdminDashboardPage() {
 
   return (
     <div className="page">
+      {/* No page-specific banner here - the club background image is applied
+          app-wide on body (see index.css) instead. */}
       <h1>Admin Dashboard</h1>
       <div className="stat-row">
         <div className="stat-card">

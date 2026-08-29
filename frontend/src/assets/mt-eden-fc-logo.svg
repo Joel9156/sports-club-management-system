@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 140 140" fill="none" role="img" aria-label="Mt Eden FC">
+  <defs><path id="edenArc" d="M70 70 m-49 0 a49 49 0 0 1 98 0"></path></defs>
+  <circle cx="70" cy="70" r="66" stroke="#161826" stroke-width="3"></circle>
+  <circle cx="70" cy="70" r="57" stroke="#161826" stroke-width="1.5" opacity=".4"></circle>
+  <text font-family="Inter, system-ui, -apple-system, sans-serif" font-size="12" font-weight="600" letter-spacing="3" fill="#161826">
+    <textPath href="#edenArc" startOffset="50%" text-anchor="middle">MT EDEN FC</textPath>
+  </text>
+  <path d="M40 94 L60 60 L70 76 L82 54 L100 94 Z" fill="#161826"></path>
+  <path d="M40 104 H100" stroke="#161826" stroke-width="3"></path>
+</svg>

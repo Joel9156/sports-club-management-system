@@ -10,6 +10,9 @@
   --social-bg: rgba(244, 243, 236, 0.5);
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* Nearly-opaque version of --bg so page content stays readable once a real
+     background image sits behind it (see body's background-image below). */
+  --bg-translucent: rgba(255, 255, 255, 0.92);
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -43,6 +46,7 @@
     --social-bg: rgba(47, 48, 58, 0.5);
     --shadow:
       rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+    --bg-translucent: rgba(22, 23, 29, 0.92);
   }
 
   #social .button-icon {
@@ -52,6 +56,16 @@
 
 body {
   margin: 0;
+  /* Mt Eden FC training pitch photo (2000x1333, credit: michaeldawson.nz -
+     see frontend/public/images/Background.jpg). Fixed + cover so it reads as
+     a wallpaper behind every page rather than scrolling with the content.
+     .page's --bg-translucent background (see App.css) is what keeps text
+     readable on top of it. */
+  background-image: url('/images/Background.jpg');
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 #root {

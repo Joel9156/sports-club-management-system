@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import logo from '../assets/mt-eden-fc-logo.svg'
 
 const ROLE_HOME = {
   Player: '/players/team',
@@ -33,6 +34,10 @@ function LoginPage() {
 
   return (
     <div className="page page-narrow">
+      {/* No page-specific hero image here - the club background image is
+          applied app-wide on body (see index.css) so it reads as a
+          consistent wallpaper behind every page, not just this one. */}
+      <img src={logo} alt="Mt Eden FC" className="login-logo" />
       <h1>Log in</h1>
       <form onSubmit={handleSubmit}>
         <label>
