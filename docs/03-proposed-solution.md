@@ -3,11 +3,15 @@
 ## Overview
 The proposed solution is a web-based Player and Volunteer Management System that replaces the club's current mix of spreadsheets, emails, and manual process with a single, centralized platform.
 
+The prototype is based on Mt Eden FC, a real local club, to make the design more realistic and reflect how a local club might actually operate. However, all data used in the system is sample or test data and does not include any real player or volunteer information. This is a course prototype only and is not an official system or endorsed by the club.
+
 The system targets the issues identified in the Problem Definition. A centralised database with entry-point validation removes duplicate player records. Rule-based team allocation replaces the manual, error-prone assignment process. Structured volunteer profiles with required-field validation ensure volunteer information is complete and accessible. Automated reporting replaces manual data aggregation, and role-based workflows reduce the overall administrative burden on club staff.
 
 The system supports four user roles: Players, Volunteers, Coaches, and Administrators. Each role has access appropriate to their needs, supporting both usability and data security.
 
 The prototype is build with React (Vite) for the frontend and ASP.NET Core Web API with SQLite for the backend, using sample data to represent a small-to-medium sized club.
+
+A web-based GUI was chosen instead of a desktop application or command-line tool because the system needs to be accessible to four different user roles through a regular web browser. This means users can access the system from different devices without having to install any software, which also supports the usability and accessibility requirements identified during the requirements analysis.
 
 ## Player Registration 
 This feature directly addresses the duplicate player records and wrong team allocation issues identified in the Problem Definition. Currently, player data is entered manually across multiple spreadsheets with no shared validation, leading to duplicate entries and inconsistent information reaching coaches and administrators.
