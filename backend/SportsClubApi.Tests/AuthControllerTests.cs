@@ -62,4 +62,40 @@ public class AuthControllerTests
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
+        // TC-03: Duplicate email during self-registration returns 409.
+    [Fact]
+    public async Task Register_WithDuplicateEmail_ReturnsConflict()
+    {
+        using var factory = new SportsClubApiFactory();
+        var user = await TestHelpers.SeedUserAsync(factory, UserRole.Player, "existing-player@example.com");
+        var client = factory.CreateClient();
+
+        var response = await client.PostAsJsonAsync("/api/auth/register", new RegisterRequest
+        {
+            Email = user.Email,
+            Password = TestHelpers.DefaultPassword,
+            FullName = "Existing Player",
+            Role = UserRole.Player,
+        });
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    // TC-04: Self-registration rejects Admin role with 400.
+    [Fact]
+    public async Task Register_WithAdminRole_ReturnsBadRequest()
+    {
+        using var factory = new SportsClubApiFactory();
+        var client = factory.CreateClient();
+
+        var response = await client.PostAsJsonAsync("/api/auth/register", new RegisterRequest
+        {
+            Email = "admin@example.com",
+            Password = TestHelpers.DefaultPassword,
+            FullName = "Admin User",
+            Role = UserRole.Admin,
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 }
