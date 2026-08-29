@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import PlayerForm from '../../components/PlayerForm'
 import { createPlayer } from '../../api/players'
+import { useAuth } from '../../context/AuthContext'
 
 // Creates a Player roster record (POST /api/players) - distinct from the
 // auth account created at /register. A player logs in first, then submits
 // this to register themselves on the club roster.
 function PlayerRegisterPage() {
+  const { user } = useAuth()
   const [status, setStatus] = useState(null)
   const [error, setError] = useState(null)
   const [formKey, setFormKey] = useState(0)
@@ -28,7 +30,12 @@ function PlayerRegisterPage() {
       {/* docs/03-proposed-solution.md calls for a required guardian/parent
           contact field when the registrant is under 18, but the Player model
           doesn't have one yet - that would need a backend model change. */}
-      <PlayerForm key={formKey} onSubmit={handleCreate} submitLabel="Register" />
+      <PlayerForm
+        key={formKey}
+        defaultEmail={user?.email}
+        onSubmit={handleCreate}
+        submitLabel="Register"
+      />
       {status === 'success' && <p className="success">Registration submitted.</p>}
       {status === 'error' && <p className="error">{error}</p>}
     </div>

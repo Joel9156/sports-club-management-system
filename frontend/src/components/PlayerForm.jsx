@@ -14,9 +14,17 @@ const blank = {
 
 // Shared create/edit form for a Player record, used by the player
 // self-registration page and the admin players page.
-function PlayerForm({ initial, onSubmit, submitLabel }) {
+//
+// `defaultEmail` pre-fills the email field on first render only (e.g. with
+// the logged-in user's account email, so a self-registering player doesn't
+// have to retype what they already entered at signup) - it's read once via
+// the lazy useState initializer, not re-applied on every render, so it won't
+// fight the player while they're editing the form. `initial` is different:
+// it's for switching which existing record is being edited (Admin CRUD) and
+// does re-apply whenever it changes.
+function PlayerForm({ initial, defaultEmail, onSubmit, submitLabel }) {
   const [teams, setTeams] = useState([])
-  const [form, setForm] = useState(initial ?? blank)
+  const [form, setForm] = useState(() => initial ?? { ...blank, email: defaultEmail ?? '' })
 
   useEffect(() => {
     getTeams().then(setTeams).catch(() => {})
