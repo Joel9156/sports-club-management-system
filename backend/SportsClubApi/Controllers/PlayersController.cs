@@ -46,10 +46,22 @@ public class PlayersController : ControllerBase
     // POST: api/players
     // Admins register players on behalf of the club; Players can also submit
     // their own registration (docs/03-proposed-solution.md - Player Registration).
+    //
+    // Entry-point duplicate check: the proposed solution promises that
+    // "entry-point validation removes duplicate player records" - without
+    // this, a Player role could submit this form repeatedly and create an
+    // unlimited number of records, reproducing the exact duplicate-records
+    // problem (Problem #1) this project exists to solve.
     [HttpPost]
     [Authorize(Roles = "Admin,Player")]
     public async Task<ActionResult<Player>> CreatePlayer(Player player)
     {
+        var emailTaken = await _context.Players.AnyAsync(p => p.Email == player.Email);
+        if (emailTaken)
+        {
+            return Conflict(new { message = "A player with this email is already registered." });
+        }
+
         _context.Players.Add(player);
         await _context.SaveChangesAsync();
 
