@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getPlayers } from '../../api/players'
 import { getVolunteers } from '../../api/volunteers'
-import { getTeams } from '../../api/teams'
 
 // There's no dedicated dashboard/metrics endpoint on the backend, so these
 // numbers are computed client-side from the existing list endpoints. That's
@@ -12,15 +11,13 @@ import { getTeams } from '../../api/teams'
 function AdminDashboardPage() {
   const [players, setPlayers] = useState([])
   const [volunteers, setVolunteers] = useState([])
-  const [teams, setTeams] = useState([])
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    Promise.all([getPlayers(), getVolunteers(), getTeams()])
-      .then(([p, v, t]) => {
+    Promise.all([getPlayers(), getVolunteers()])
+      .then(([p, v]) => {
         setPlayers(p)
         setVolunteers(v)
-        setTeams(t)
       })
       .catch((err) => setError(err.message))
   }, [])
@@ -29,11 +26,6 @@ function AdminDashboardPage() {
 
   const activePlayers = players.filter((p) => p.isActive).length
   const activeVolunteers = volunteers.filter((v) => v.isActive).length
-  const playersPerTeam = teams.map((t) => ({
-    id: t.id,
-    name: t.name,
-    count: players.filter((p) => p.teamId === t.id).length,
-  }))
 
   return (
     <div className="page">
@@ -49,29 +41,7 @@ function AdminDashboardPage() {
           <span>{volunteers.length}</span>
           Volunteers ({activeVolunteers} active)
         </div>
-        <div className="stat-card">
-          <span>{teams.length}</span>
-          Teams
-        </div>
       </div>
-
-      <h2>Players per team</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Team</th>
-            <th>Players</th>
-          </tr>
-        </thead>
-        <tbody>
-          {playersPerTeam.map((row) => (
-            <tr key={row.id}>
-              <td>{row.name}</td>
-              <td>{row.count}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </div>
   )
 }

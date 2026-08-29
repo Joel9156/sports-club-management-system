@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { getTeams } from '../../api/teams'
 import { getPlayers } from '../../api/players'
 import { getAttendance, recordAttendance } from '../../api/attendance'
 
@@ -7,15 +6,13 @@ function todayIso() {
   return new Date().toISOString().slice(0, 10)
 }
 
-// Marks attendance for a team's roster on a chosen date. Existing records for
-// that date come from GET /api/attendance?teamId=&date=; new ones are saved
-// with POST /api/attendance. There's no PUT endpoint yet, so a player who
-// already has a record for the selected date can't be re-marked here - their
-// checkbox is disabled and shows what was already recorded instead.
+// Marks attendance for the Mt Eden FC roster on a chosen date. Existing
+// records for that date come from GET /api/attendance?date=; new ones are
+// saved with POST /api/attendance. There's no PUT endpoint yet, so a player
+// who already has a record for the selected date can't be re-marked here -
+// their checkbox is disabled and shows what was already recorded instead.
 function CoachAttendancePage() {
-  const [teams, setTeams] = useState([])
   const [players, setPlayers] = useState([])
-  const [selectedTeamId, setSelectedTeamId] = useState('')
   const [sessionDate, setSessionDate] = useState(todayIso())
   const [existing, setExisting] = useState([])
   const [presentMap, setPresentMap] = useState({})
@@ -24,27 +21,23 @@ function CoachAttendancePage() {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    Promise.all([getTeams(), getPlayers()])
-      .then(([teamsData, playersData]) => {
-        setTeams(teamsData)
-        setPlayers(playersData)
-      })
+    getPlayers()
+      .then(setPlayers)
       .catch((err) => setError(err.message))
   }, [])
 
   useEffect(() => {
-    if (!selectedTeamId || !sessionDate) {
+    if (!sessionDate) {
       setExisting([])
       return
     }
-    getAttendance({ teamId: selectedTeamId, date: sessionDate })
+    getAttendance({ date: sessionDate })
       .then(setExisting)
       .catch((err) => setError(err.message))
-  }, [selectedTeamId, sessionDate])
+  }, [sessionDate])
 
-  const roster = players.filter((p) => String(p.teamId) === String(selectedTeamId))
   const existingByPlayer = Object.fromEntries(existing.map((a) => [a.playerId, a]))
-  const unrecorded = roster.filter((p) => !existingByPlayer[p.id])
+  const unrecorded = players.filter((p) => !existingByPlayer[p.id])
 
   function toggle(playerId) {
     setPresentMap((m) => ({ ...m, [playerId]: !m[playerId] }))
@@ -65,7 +58,7 @@ function CoachAttendancePage() {
           }),
         ),
       )
-      const refreshed = await getAttendance({ teamId: selectedTeamId, date: sessionDate })
+      const refreshed = await getAttendance({ date: sessionDate })
       setExisting(refreshed)
       setPresentMap({})
       setStatus('success')
@@ -81,66 +74,51 @@ function CoachAttendancePage() {
     <div className="page">
       <h1>Attendance</h1>
       <label>
-        Team
-        <select value={selectedTeamId} onChange={(e) => setSelectedTeamId(e.target.value)}>
-          <option value="">Select a team</option>
-          {teams.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name} ({t.ageGroup})
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
         Session date
         <input type="date" value={sessionDate} onChange={(e) => setSessionDate(e.target.value)} />
       </label>
 
-      {selectedTeamId && (
-        <>
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Present</th>
-                <th>Status</th>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Present</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {players.map((p) => {
+            const record = existingByPlayer[p.id]
+            return (
+              <tr key={p.id}>
+                <td>{p.fullName}</td>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={record ? record.isPresent : Boolean(presentMap[p.id])}
+                    disabled={Boolean(record)}
+                    onChange={() => toggle(p.id)}
+                  />
+                </td>
+                <td>{record ? 'Recorded' : 'Not yet recorded'}</td>
               </tr>
-            </thead>
-            <tbody>
-              {roster.map((p) => {
-                const record = existingByPlayer[p.id]
-                return (
-                  <tr key={p.id}>
-                    <td>{p.fullName}</td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        checked={record ? record.isPresent : Boolean(presentMap[p.id])}
-                        disabled={Boolean(record)}
-                        onChange={() => toggle(p.id)}
-                      />
-                    </td>
-                    <td>{record ? 'Recorded' : 'Not yet recorded'}</td>
-                  </tr>
-                )
-              })}
-              {roster.length === 0 && (
-                <tr>
-                  <td colSpan={3}>No players on this team yet.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+            )
+          })}
+          {players.length === 0 && (
+            <tr>
+              <td colSpan={3}>No players registered yet.</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
 
-          {unrecorded.length > 0 && (
-            <button type="button" onClick={handleSave} disabled={saving}>
-              {saving ? 'Saving...' : `Save attendance for ${unrecorded.length} player(s)`}
-            </button>
-          )}
-          {roster.length > 0 && unrecorded.length === 0 && (
-            <p className="hint">All players already have an attendance record for this date.</p>
-          )}
-        </>
+      {unrecorded.length > 0 && (
+        <button type="button" onClick={handleSave} disabled={saving}>
+          {saving ? 'Saving...' : `Save attendance for ${unrecorded.length} player(s)`}
+        </button>
+      )}
+      {players.length > 0 && unrecorded.length === 0 && (
+        <p className="hint">All players already have an attendance record for this date.</p>
       )}
 
       {status === 'success' && <p className="success">Attendance saved.</p>}
