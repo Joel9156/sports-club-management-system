@@ -49,6 +49,28 @@ public class AuthController : ControllerBase
         user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
 
         _context.Users.Add(user);
+
+        // GitHub #2: a Player account and its roster record used to be two
+        // unrelated, easy-to-skip steps (this form, then a separate "Player
+        // Registration" submission), so signing up here never actually put
+        // anyone on the Admin Players list. Create the roster record
+        // immediately, using the same name/email just entered - a player can
+        // still fill in the remaining details (date of birth, phone) later.
+        if (request.Role == UserRole.Player)
+        {
+            var playerExists = await _context.Players.AnyAsync(p => p.Email == user.Email);
+            if (!playerExists)
+            {
+                _context.Players.Add(new Player
+                {
+                    FullName = user.FullName,
+                    Email = user.Email,
+                    RegistrationDate = DateOnly.FromDateTime(DateTime.UtcNow),
+                    IsActive = true,
+                });
+            }
+        }
+
         await _context.SaveChangesAsync();
 
         return Ok(BuildAuthResponse(user));
