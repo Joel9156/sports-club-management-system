@@ -45,6 +45,19 @@ Auth is JWT-based (`Microsoft.AspNetCore.Authentication.JwtBearer`). Signing key
   - `PUT`/`DELETE` and `POST /api/teams` — `Admin` only
 - Enums (e.g. `role`) serialize as strings (`"Player"`, not `0`).
 
+### Seeded Coach/Admin accounts
+
+Self-registration can't create a Coach or Admin account, so on every startup `DbSeeder` (see
+`Data/DbSeeder.cs`) creates one of each if none exists yet — safe to run repeatedly, it skips
+accounts that already exist:
+
+| Role  | Email                    | Password       |
+|-------|--------------------------|----------------|
+| Admin | `admin@mtedenfc.test`    | `Password123!` |
+| Coach | `coach@mtedenfc.test`    | `Password123!` |
+
+These are fixed test credentials for local development/demo only, not meant for any real deployment.
+
 ## Project layout
 
 - `Models/` — domain entities (Player, Volunteer, Team, Attendance, User)

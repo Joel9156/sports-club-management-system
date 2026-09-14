@@ -92,4 +92,12 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Ensures a Coach and an Admin account always exist - see DbSeeder for why
+// this is necessary (self-registration can't create either role).
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await DbSeeder.SeedAsync(db);
+}
+
 app.Run();
