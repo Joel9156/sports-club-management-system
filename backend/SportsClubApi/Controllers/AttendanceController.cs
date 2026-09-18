@@ -72,13 +72,29 @@ public class AttendanceController : ControllerBase
     [Authorize(Roles = "Admin,Coach")]
     public async Task<ActionResult<Attendance>> RecordAttendance(Attendance attendance)
     {
-        var playerExists = await _context.Players.AnyAsync(p => p.Id == attendance.PlayerId);
-        if (!playerExists)
+        var player = await _context.Players.FindAsync(attendance.PlayerId);
+        if (player == null)
         {
             return BadRequest(new { message = "Player does not exist." });
         }
 
         _context.Attendances.Add(attendance);
+
+        // Notify the player if their email matches an existing User account.
+        // There's no formal Player-User link (see docs/07-project-progress.md),
+        // so email is the best available match - if nobody registered an
+        // account with that email, there's simply no one to notify yet.
+        var matchingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == player.Email);
+        if (matchingUser != null)
+        {
+            _context.Notifications.Add(new Notification
+            {
+                UserId = matchingUser.Id,
+                Message = $"You were marked {(attendance.IsPresent ? "present" : "absent")} " +
+                    $"for the session on {attendance.SessionDate:yyyy-MM-dd}.",
+            });
+        }
+
         await _context.SaveChangesAsync();
 
         return CreatedAtAction(nameof(GetAttendanceRecord), new { id = attendance.Id }, attendance);
