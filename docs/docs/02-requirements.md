@@ -135,11 +135,11 @@ The Requirements Traceability Matrix (RTM) links the main system requirements wi
 | ID | Requirement | Type | Quality Attribute | Planned Test | Current Status |
 |---|---|---|---|---|---|
 | FR-01 | Users can securely log in to the system | Functional | Security | Valid and invalid login testing | Tested |
-| FR-02 | Administrators can register and manage players | Functional | Accuracy, Usability | Player registration testing | Tested |
+| FR-02 | Administrators can register and manage players | Functional | Accuracy, Usability | Player registration testing | Issue #2 fix reported as merged; verification pending |
 | FR-03 | Administrators can register and manage volunteers | Functional | Accuracy, Usability | Volunteer management testing | Tested |
 | FR-04 | Authorised users can allocate players to teams | Functional | Correctness | Team allocation testing | Tested |
 | FR-05 | Coaches or administrators can record attendance | Functional | Reliability, Accuracy | Attendance recording testing | Automated tests to be added |
-| FR-06 | Users can view reports and dashboards | Functional | Performance, Usability | Report and dashboard testing | Issue #2 fixed and merged |
+| FR-06 | Users can view reports and dashboards | Functional | Performance, Usability | Report and dashboard testing | Testing in progress |
 | FR-07 | The system provides relevant notifications | Functional | Reliability | Notification testing | Testing pending |
 | NFR-01 | Sensitive information is protected from unauthorised access | Non-functional | Security | Role-based access testing | Further security testing planned |
 | NFR-02 | The system responds within an acceptable time | Non-functional | Performance | Performance testing | Testing planned |
