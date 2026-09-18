@@ -11,6 +11,12 @@ The defect register is used to record defects identified during testing and trac
 | DEF-01 | Issue #1 | Team Allocation | The team name was displayed as an ID after a player was allocated to a team. | Medium | To be confirmed | To be analysed | Pending |
 | DEF-02 | Issue #2 | Dashboard | Players registered through the registration page were not correctly reflected in the dashboard player count. | Medium | Fixed and merged | To be analysed | To be confirmed |
 
+### Defect Severity
+
+- **High:** A major function cannot be used or there is a serious security or data problem.
+- **Medium:** A function works incorrectly but the system can still be used.
+- **Low:** A minor issue that does not significantly affect the main system functions.
+
 ## 3. Root Cause Analysis
 
 Root cause analysis will be completed for each confirmed defect. This will help the team identify why the problem occurred, how it was corrected and whether the fix worked successfully after retesting.
