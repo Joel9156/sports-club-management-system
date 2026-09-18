@@ -13,6 +13,7 @@ import CoachAttendancePage from './pages/coaches/CoachAttendancePage'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 import AdminPlayersPage from './pages/admin/AdminPlayersPage'
 import AdminVolunteersPage from './pages/admin/AdminVolunteersPage'
+import NotificationsPage from './pages/NotificationsPage'
 import './App.css'
 
 const ROLE_HOME = {
@@ -54,6 +55,12 @@ function AppRoutes() {
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         <Route path="/admin/players" element={<AdminPlayersPage />} />
         <Route path="/admin/volunteers" element={<AdminVolunteersPage />} />
+      </Route>
+
+      {/* No roles prop - any authenticated user, of any role, can see their
+          own notifications. */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/notifications" element={<NotificationsPage />} />
       </Route>
 
       <Route path="/" element={<Home />} />

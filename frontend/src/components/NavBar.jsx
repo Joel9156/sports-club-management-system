@@ -41,6 +41,9 @@ function NavBar() {
             {label}
           </Link>
         ))}
+      {/* Every role has the same own-notifications page, unlike the
+          role-specific links above. */}
+      {user && <Link to="/notifications">Notifications</Link>}
       <span className="spacer" />
       {user ? (
         <>
