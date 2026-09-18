@@ -42,6 +42,7 @@ This feature supports the slow reporting problem identified in the Problem Defin
 Coaches can mark attendance for each training session or match against the relevant team roster, generated from Team Allocation. Each attendance record is saved immediately to the central database, making it available for reporting without any additional data entry. Administrators and coaches can also view a player's or team's attendance history over time.
 
 **Related quality attributes:** performance (removes the manual aggregation step, allowing faster report generation), reliability (attendance is recorded at the point it occurs, avoiding errors from reconstructing records later), usability (attendance can be marked quickly against an existing roster).
+
 ## Reports&Dashboard
 This feature directly addresses the slow reproting problem identified in the Problem Definition. Administrations currently have to manually pull number together from separate spradsheets and emails, which is time-consuming and delays visibility into how the club is running.
 
