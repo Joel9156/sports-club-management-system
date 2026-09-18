@@ -66,9 +66,46 @@ public class AuthControllerTests
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
-    // GitHub #2: registering a Player account must also create a Player
-    // roster record (same name/email) so the new player shows up on the
-    // Admin Players list without a separate, easy-to-skip step.
+    // TC-13: Duplicate email during self-registration returns 409.
+    [Fact]
+    public async Task Register_WithDuplicateEmail_ReturnsConflict()
+    {
+        using var factory = new SportsClubApiFactory();
+        var user = await TestHelpers.SeedUserAsync(factory, UserRole.Player, "existing-player@example.com");
+        var client = factory.CreateClient();
+
+        var response = await client.PostAsJsonAsync("/api/auth/register", new RegisterRequest
+        {
+            Email = user.Email,
+            Password = TestHelpers.DefaultPassword,
+            FullName = "Existing Player",
+            Role = UserRole.Player,
+        });
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    // TC-14: Self-registration rejects an Admin role with 400.
+    [Fact]
+    public async Task Register_WithAdminRole_ReturnsBadRequest()
+    {
+        using var factory = new SportsClubApiFactory();
+        var client = factory.CreateClient();
+
+        var response = await client.PostAsJsonAsync("/api/auth/register", new RegisterRequest
+        {
+            Email = "admin@example.com",
+            Password = TestHelpers.DefaultPassword,
+            FullName = "Admin User",
+            Role = UserRole.Admin,
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    // TC-12: GitHub #2 - registering a Player account must also create a
+    // Player roster record (same name/email) so the new player shows up on
+    // the Admin Players list without a separate, easy-to-skip step.
     [Fact]
     public async Task Register_WithPlayerRole_CreatesLinkedPlayerRecord()
     {
@@ -93,7 +130,7 @@ public class AuthControllerTests
         Assert.Equal("New Player", player!.FullName);
     }
 
-    // Volunteer accounts don't belong on the player roster.
+    // TC-15: Volunteer accounts don't belong on the player roster.
     [Fact]
     public async Task Register_WithVolunteerRole_DoesNotCreatePlayerRecord()
     {
@@ -117,9 +154,9 @@ public class AuthControllerTests
         Assert.Null(player);
     }
 
-    // Registering shouldn't create a second, conflicting Player record when
-    // one already exists for that email (e.g. an admin pre-registered the
-    // player on the roster before they created their own login).
+    // TC-16: Registering shouldn't create a second, conflicting Player record
+    // when one already exists for that email (e.g. an admin pre-registered
+    // the player on the roster before they created their own login).
     [Fact]
     public async Task Register_WithPlayerRole_DoesNotDuplicateExistingPlayerRecord()
     {

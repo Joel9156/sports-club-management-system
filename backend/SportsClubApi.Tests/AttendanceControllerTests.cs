@@ -4,12 +4,13 @@ using SportsClubApi.Models;
 
 namespace SportsClubApi.Tests;
 
-// AttendanceController isn't covered by docs/05-test-cases.md's TC-01–TC-08
-// (it was implemented afterwards - see docs/07-project-progress.md), so these
-// tests have no TC-## label to reference, unlike the other test classes.
+// docs/05-test-cases.md now has TC-09 through TC-11 for Attendance; those
+// three tests are labelled to match below. GetAttendance_ReturnsOkWithRecordedSessions
+// and GetAttendanceRecord_ById_ReturnsCorrectRecord are supplementary
+// automated coverage beyond that manual list, so they're left unlabelled.
 public class AttendanceControllerTests
 {
-    // Valid attendance creation (Coach role) returns 201.
+    // TC-09: Valid attendance creation (Coach role) returns 201.
     [Fact]
     public async Task RecordAttendance_WithValidData_ReturnsCreated()
     {
@@ -46,7 +47,7 @@ public class AttendanceControllerTests
         Assert.Equal(player.Id, created.PlayerId);
     }
 
-    // Recording attendance without a bearer token returns 401.
+    // TC-10: Recording attendance without a bearer token returns 401.
     [Fact]
     public async Task RecordAttendance_WithoutAuth_ReturnsUnauthorized()
     {
@@ -102,8 +103,8 @@ public class AttendanceControllerTests
         Assert.True(records[0].IsPresent);
     }
 
-    // ?teamId= filters attendance down to players on that team (via a join on
-    // Player.TeamId - Attendance itself has no TeamId column).
+    // TC-11: ?teamId= filters attendance down to players on that team (via a
+    // join on Player.TeamId - Attendance itself has no TeamId column).
     [Fact]
     public async Task GetAttendance_FilteredByTeamId_ReturnsOnlyMatchingRecords()
     {
@@ -242,5 +243,97 @@ public class AttendanceControllerTests
         Assert.Equal(player.Id, record.PlayerId);
         Assert.False(record.IsPresent);
         Assert.Equal("Injured", record.Notes);
+    }
+
+    // TC-17: Only Admin/Coach can record attendance - a Player role is forbidden.
+    [Fact]
+    public async Task RecordAttendance_AsPlayerRole_ReturnsForbidden()
+    {
+        using var factory = new SportsClubApiFactory();
+        var adminClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+
+        var playerResponse = await adminClient.PostAsJsonAsync("/api/players", new
+        {
+            fullName = "Riley Chen",
+            dateOfBirth = "2013-03-11",
+            email = "riley.chen.attendance@example.com",
+            phone = "555-0303",
+            registrationDate = "2026-01-15",
+            isActive = true,
+        });
+        playerResponse.EnsureSuccessStatusCode();
+        var player = await playerResponse.Content.ReadFromJsonAsync<Player>();
+
+        var playerClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Player);
+
+        var response = await playerClient.PostAsJsonAsync("/api/attendance", new
+        {
+            playerId = player!.Id,
+            sessionDate = "2026-02-01",
+            isPresent = true,
+            notes = "",
+        });
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    // TC-18: Recording attendance against a nonexistent player returns 400.
+    [Fact]
+    public async Task RecordAttendance_WithNonexistentPlayer_ReturnsBadRequest()
+    {
+        using var factory = new SportsClubApiFactory();
+        var coachClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Coach);
+
+        var response = await coachClient.PostAsJsonAsync("/api/attendance", new
+        {
+            playerId = 999999,
+            sessionDate = "2026-02-01",
+            isPresent = true,
+            notes = "",
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    // TC-19: ?date= filters attendance down to records for that session date.
+    [Fact]
+    public async Task GetAttendance_FilteredByDate_ReturnsOnlyMatchingRecords()
+    {
+        using var factory = new SportsClubApiFactory();
+        var adminClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+
+        var playerResponse = await adminClient.PostAsJsonAsync("/api/players", new
+        {
+            fullName = "Attendance Filter Test",
+            dateOfBirth = "2012-05-04",
+            email = "attendance-filter@example.com",
+            phone = "555-0101",
+            registrationDate = "2026-01-15",
+            isActive = true,
+        });
+        playerResponse.EnsureSuccessStatusCode();
+        var player = await playerResponse.Content.ReadFromJsonAsync<Player>();
+
+        await adminClient.PostAsJsonAsync("/api/attendance", new
+        {
+            playerId = player!.Id,
+            sessionDate = "2026-03-01",
+            isPresent = true,
+            notes = "",
+        });
+        await adminClient.PostAsJsonAsync("/api/attendance", new
+        {
+            playerId = player.Id,
+            sessionDate = "2026-03-08",
+            isPresent = false,
+            notes = "",
+        });
+
+        var records = await adminClient.GetFromJsonAsync<List<Attendance>>(
+            "/api/attendance?date=2026-03-01");
+
+        Assert.NotNull(records);
+        Assert.Single(records!);
+        Assert.Equal("2026-03-01", records![0].SessionDate.ToString("yyyy-MM-dd"));
     }
 }
