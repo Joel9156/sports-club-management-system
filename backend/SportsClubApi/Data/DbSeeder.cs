@@ -44,6 +44,17 @@ public static class DbSeeder
             context.Users.Add(coach);
         }
 
+        if (!await context.Teams.AnyAsync())
+        {
+            context.Teams.Add(new Team
+            {
+                Name = "Mt Eden FC",
+                AgeGroup = "Open",
+                CoachName = "Default Coach",
+                Season = "2026",
+            });
+        }
+
         await context.SaveChangesAsync();
     }
 }
