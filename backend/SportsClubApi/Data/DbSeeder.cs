@@ -8,7 +8,7 @@ namespace SportsClubApi.Data;
 // only allows Player/Volunteer, by design - see AuthController). Without
 // this seeder there was previously no way to get a Coach/Admin account on a
 // fresh database at all short of editing the DB by hand. Idempotent: it only
-// creates an account if that role doesn't already exist, so it's safe to run
+// creates a default account if its email doesn't already exist, so it's safe to run
 // on every startup.
 public static class DbSeeder
 {
@@ -20,7 +20,7 @@ public static class DbSeeder
     {
         var hasher = new PasswordHasher<User>();
 
-        if (!await context.Users.AnyAsync(u => u.Role == UserRole.Admin))
+        if (!await context.Users.AnyAsync(u => u.Email == DefaultAdminEmail))
         {
             var admin = new User
             {
@@ -32,7 +32,7 @@ public static class DbSeeder
             context.Users.Add(admin);
         }
 
-        if (!await context.Users.AnyAsync(u => u.Role == UserRole.Coach))
+        if (!await context.Users.AnyAsync(u => u.Email == DefaultCoachEmail))
         {
             var coach = new User
             {

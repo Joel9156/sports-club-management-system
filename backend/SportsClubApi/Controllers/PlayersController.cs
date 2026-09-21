@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -44,8 +45,8 @@ public class PlayersController : ControllerBase
     }
 
     // POST: api/players
-    // Admins register players on behalf of the club; Players can also submit
-    // their own registration (docs/03-proposed-solution.md - Player Registration).
+    // Registering a player is an Admin action. (Signing up for a Player
+    // account already creates a matching roster record - see AuthController.)
     //
     // Entry-point duplicate check: the proposed solution promises that
     // "entry-point validation removes duplicate player records" - without
@@ -53,7 +54,7 @@ public class PlayersController : ControllerBase
     // unlimited number of records, reproducing the exact duplicate-records
     // problem (Problem #1) this project exists to solve.
     [HttpPost]
-    [Authorize(Roles = "Admin,Player")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<Player>> CreatePlayer(Player player)
     {
         var emailTaken = await _context.Players.AnyAsync(p => p.Email == player.Email);
@@ -69,13 +70,37 @@ public class PlayersController : ControllerBase
     }
 
     // PUT: api/players/5
+    // Admins can edit any record. A Player can only complete their own (the one
+    // whose email matches their login) - that's how the auto-created record
+    // gets its date of birth and phone - and can't change who it belongs to,
+    // its team, or whether it's active.
     [HttpPut("{id:int}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Player")]
     public async Task<IActionResult> UpdatePlayer(int id, Player player)
     {
         if (id != player.Id)
         {
             return BadRequest();
+        }
+
+        if (!User.IsInRole("Admin"))
+        {
+            var existing = await _context.Players.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
+            if (existing == null)
+            {
+                return NotFound();
+            }
+
+            var myEmail = User.FindFirstValue(ClaimTypes.Email) ?? User.FindFirstValue("email");
+            if (!string.Equals(existing.Email, myEmail, StringComparison.OrdinalIgnoreCase))
+            {
+                return Forbid();
+            }
+
+            player.Email = existing.Email;
+            player.TeamId = existing.TeamId;
+            player.IsActive = existing.IsActive;
+            player.RegistrationDate = existing.RegistrationDate;
         }
 
         _context.Entry(player).State = EntityState.Modified;

@@ -7,7 +7,8 @@ using SportsClubApi.Models;
 namespace SportsClubApi.Controllers;
 
 // The club's schedule of matches and training sessions. Every role can read
-// it; only Admins manage it.
+// it. Coaches (and Admins) add and edit events - including entering a match
+// result; deleting an event is Admin-only.
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -51,7 +52,7 @@ public class EventsController : ControllerBase
 
     // POST: api/events
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Coach")]
     public async Task<ActionResult<ScheduledEvent>> CreateEvent(ScheduledEvent scheduledEvent)
     {
         var problem = Validate(scheduledEvent);
@@ -68,7 +69,7 @@ public class EventsController : ControllerBase
 
     // PUT: api/events/5
     [HttpPut("{id:int}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Coach")]
     public async Task<IActionResult> UpdateEvent(int id, ScheduledEvent scheduledEvent)
     {
         if (id != scheduledEvent.Id)

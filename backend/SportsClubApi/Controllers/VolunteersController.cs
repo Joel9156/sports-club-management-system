@@ -42,10 +42,9 @@ public class VolunteersController : ControllerBase
     }
 
     // POST: api/volunteers
-    // Admins register volunteers on behalf of the club; Volunteers can also
-    // submit their own profile (docs/03-proposed-solution.md - Volunteer Management).
+    // Registering a volunteer is an Admin action.
     [HttpPost]
-    [Authorize(Roles = "Admin,Volunteer")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<Volunteer>> CreateVolunteer(Volunteer volunteer)
     {
         _context.Volunteers.Add(volunteer);

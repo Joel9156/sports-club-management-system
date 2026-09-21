@@ -56,7 +56,7 @@ public class PlayerStatsControllerTests
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    // TC-30: Only Admins enter stats - a Player is forbidden.
+    // TC-30: Only Coaches and Admins enter stats - a Player is forbidden.
     [Fact]
     public async Task RecordStat_AsPlayer_ReturnsForbidden()
     {
@@ -69,6 +69,21 @@ public class PlayerStatsControllerTests
         var response = await ScheduleTestHelpers.RecordStatAsync(playerClient, player.Id, match.Id, goals: 9);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    // TC-36: A Coach can enter a player's goals/assists for a match, returning 201.
+    [Fact]
+    public async Task RecordStat_AsCoach_ReturnsCreated()
+    {
+        using var factory = new SportsClubApiFactory();
+        var adminClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+        var match = await ScheduleTestHelpers.CreateMatchAsync(adminClient);
+        var player = await ScheduleTestHelpers.CreatePlayerAsync(adminClient, "coach-entered@example.com");
+
+        var coachClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Coach);
+        var response = await ScheduleTestHelpers.RecordStatAsync(coachClient, player.Id, match.Id, goals: 1, assists: 2);
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
 
     // TC-31: Negative goals are rejected with 400.

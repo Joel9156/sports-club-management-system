@@ -30,14 +30,47 @@ public class EventsControllerTests
         Assert.Equal("Eden Rovers", created.Opponent);
     }
 
-    // TC-23: Only Admins manage the schedule - a Coach is forbidden.
+    // TC-34: A Coach can add training to the schedule, returning 201.
     [Fact]
-    public async Task CreateEvent_AsCoach_ReturnsForbidden()
+    public async Task CreateEvent_AsCoach_ReturnsCreated()
     {
         using var factory = new SportsClubApiFactory();
         var coachClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Coach);
 
         var response = await coachClient.PostAsJsonAsync("/api/events", new
+        {
+            type = "Training",
+            date = "2026-10-02",
+            location = "Nixon Park",
+        });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+    }
+
+    // TC-35: Deleting an event is Admin-only - a Coach gets 403, an Admin 204.
+    [Fact]
+    public async Task DeleteEvent_CoachForbidden_AdminAllowed()
+    {
+        using var factory = new SportsClubApiFactory();
+        var adminClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+        var coachClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Coach);
+        var match = await ScheduleTestHelpers.CreateMatchAsync(adminClient);
+
+        var asCoach = await coachClient.DeleteAsync($"/api/events/{match.Id}");
+        var asAdmin = await adminClient.DeleteAsync($"/api/events/{match.Id}");
+
+        Assert.Equal(HttpStatusCode.Forbidden, asCoach.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, asAdmin.StatusCode);
+    }
+
+    // TC-23: Only Coaches and Admins manage the schedule - a Player is forbidden.
+    [Fact]
+    public async Task CreateEvent_AsPlayer_ReturnsForbidden()
+    {
+        using var factory = new SportsClubApiFactory();
+        var playerClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Player);
+
+        var response = await playerClient.PostAsJsonAsync("/api/events", new
         {
             type = "Training",
             date = "2026-10-02",

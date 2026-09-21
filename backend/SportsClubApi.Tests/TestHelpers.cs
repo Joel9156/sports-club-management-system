@@ -46,7 +46,13 @@ internal static class TestHelpers
         UserRole role)
     {
         var user = await SeedUserAsync(factory, role);
+        return await LoginAsync(factory, user);
+    }
 
+    // Logs in as an already-seeded user (so a test can control the email, e.g.
+    // to match a Player record) and returns a client carrying their JWT.
+    public static async Task<HttpClient> LoginAsync(SportsClubApiFactory factory, User user)
+    {
         var client = factory.CreateClient();
         var loginResponse = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest
         {

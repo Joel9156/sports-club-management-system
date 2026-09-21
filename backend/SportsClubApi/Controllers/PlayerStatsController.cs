@@ -6,9 +6,11 @@ using SportsClubApi.Models;
 
 namespace SportsClubApi.Controllers;
 
-// Per-match goals/assists for a player. Every role can read; only Admins
-// enter or correct them. (Totals and the team record are computed in
-// StatsController from these rows and the match results.)
+// Per-match goals/assists for a player. Every role can read; Coaches (and
+// Admins) enter and correct them - that includes removing a row entered by
+// mistake, since ticking a player off a match's line-up deletes their row.
+// (Totals and the team record are computed in StatsController from these
+// rows and the match results.)
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -45,7 +47,7 @@ public class PlayerStatsController : ControllerBase
     // POST: api/playerstats
     // Recording a row means the player took part in that match.
     [HttpPost]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Coach")]
     public async Task<ActionResult<PlayerStat>> CreatePlayerStat(PlayerStat stat)
     {
         if (stat.Goals < 0 || stat.Assists < 0)
@@ -89,7 +91,7 @@ public class PlayerStatsController : ControllerBase
     // PUT: api/playerstats/5 - corrects goals/assists only; which player and
     // which match a row belongs to can't be changed (delete and re-add instead).
     [HttpPut("{id:int}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Coach")]
     public async Task<IActionResult> UpdatePlayerStat(int id, PlayerStat update)
     {
         if (id != update.Id)
@@ -117,7 +119,7 @@ public class PlayerStatsController : ControllerBase
 
     // DELETE: api/playerstats/5
     [HttpDelete("{id:int}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Coach")]
     public async Task<IActionResult> DeletePlayerStat(int id)
     {
         var stat = await _context.PlayerStats.FindAsync(id);
