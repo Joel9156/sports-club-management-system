@@ -6,19 +6,33 @@ const NAV_LINKS = {
   Player: [
     ['/players/register', 'Register'],
     ['/players/team', 'Roster'],
+    ['/players/attendance', 'My Attendance'],
+    ['/schedule', 'Schedule'],
+    ['/stats', 'Stats'],
   ],
   Volunteer: [
     ['/volunteers/profile', 'Profile'],
     ['/volunteers/schedule', 'Schedule'],
+    ['/schedule', 'Club Schedule'],
+    ['/stats', 'Stats'],
   ],
   Coach: [
     ['/coaches/roster', 'Roster'],
     ['/coaches/attendance', 'Attendance'],
+    ['/attendance/history', 'History'],
+    ['/schedule', 'Schedule'],
+    ['/stats', 'Stats'],
   ],
   Admin: [
     ['/admin/dashboard', 'Dashboard'],
     ['/admin/players', 'Players'],
     ['/admin/volunteers', 'Volunteers'],
+    // Admins are already allowed on the attendance route (see App.jsx) and
+    // can record attendance via the API; the page just had no menu entry.
+    ['/coaches/attendance', 'Attendance'],
+    ['/attendance/history', 'History'],
+    ['/admin/schedule', 'Schedule'],
+    ['/admin/stats', 'Stats'],
   ],
 }
 
