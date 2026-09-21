@@ -17,6 +17,10 @@ public class DashboardTests
         using var factory = new SportsClubApiFactory();
         var client = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
 
+        // DbSeeder creates a default "Mt Eden FC" team on startup, so the team
+        // list isn't empty to begin with - record the baseline to compare against.
+        var teamsBefore = await client.GetFromJsonAsync<List<Team>>("/api/teams") ?? [];
+
         var teamResponse = await client.PostAsJsonAsync("/api/teams", new
         {
             name = "U14 Falcons",
@@ -49,12 +53,13 @@ public class DashboardTests
         volunteerResponse.EnsureSuccessStatusCode();
 
         // Each test runs against its own isolated InMemory database (see
-        // SportsClubApiFactory), so these counts are exactly what was created above.
+        // SportsClubApiFactory), so players/volunteers (not seeded) are exactly
+        // what was created above, and teams are the seeded baseline plus one.
         var teams = await client.GetFromJsonAsync<List<Team>>("/api/teams") ?? [];
         var players = await client.GetFromJsonAsync<List<Player>>("/api/players") ?? [];
         var volunteers = await client.GetFromJsonAsync<List<Volunteer>>("/api/volunteers") ?? [];
 
-        Assert.Single(teams);
+        Assert.Equal(teamsBefore.Count + 1, teams.Count);
         Assert.Single(players);
         Assert.Single(volunteers);
     }
