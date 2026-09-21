@@ -55,7 +55,7 @@ Supporting design points, verified by code review rather than by automated test:
 - Passwords are hashed with ASP.NET Core's `PasswordHasher<User>` (PBKDF2) and never stored in plain text.
 - Tokens are validated for issuer, audience, signature and lifetime (120 minutes, one minute clock skew).
 - `AttendanceController`, `PlayersController`, `TeamsController`, `VolunteersController` and `NotificationsController` are all marked `[Authorize]` at class level. However, the 401 behaviour is only covered by an automated test on the attendance endpoint (TC-10); the other controllers rely on the same attribute but are not individually tested.
-- On the frontend, the JWT is held in memory only (never in `localStorage`), which avoids exposing it to script-based theft from browser storage. The trade-off is that refreshing the page logs the user out.
+- On the frontend, the login (including the JWT) is kept in `sessionStorage`, so it persists across a page refresh but is cleared when the browser tab is closed. A saved token that has expired is discarded on load. `localStorage` is not used, so the login does not outlive the tab. The trade-off is that a token in browser storage can be read by any script running on the page, so it would be exposed if the application ever had a cross-site scripting (XSS) vulnerability.
 
 ### 2.4 Known Security Risks
 
@@ -69,7 +69,7 @@ These are risks that were identified during development and are accepted for the
 
 ### 2.5 Security Testing Summary
 
-All automated security tests pass (26 of 26 tests in the backend suite passed on the last full run). Authentication is enforced, invalid logins are rejected, and the tested role restrictions hold. Testing is incomplete in two respects: the Volunteer and Coach roles are not tested against Admin-only endpoints, and the three risks in Section 2.4 remain open. No penetration testing or dependency vulnerability scanning was carried out.
+All automated security tests pass (49 of 49 tests in the backend suite passed on the last full run). Authentication is enforced, invalid logins are rejected, and the tested role restrictions hold. Testing is incomplete in two respects: the Volunteer and Coach roles are not tested against Admin-only endpoints, and the three risks in Section 2.4 remain open. No penetration testing or dependency vulnerability scanning was carried out.
 
 ## 3. Performance Testing
 
