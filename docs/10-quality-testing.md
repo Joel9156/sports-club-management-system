@@ -84,14 +84,21 @@ No load-testing tool was used, and no large dataset was generated. The automated
 
 ### 3.2 Observations
 
-No timed measurements were recorded during development, so this document does not state response times. The table below sets out what each page requests, which is what determines how it will behave as data grows, and provides the log for recording measurements. Each "Observed" cell must be completed with real values (record the dataset size and the browser Network tab timing) before this document is submitted.
+Load times were measured from the browser Network tab against the locally running application, using the small sample data set that the application is seeded with for development.
 
-| Page | Data requested on load | Records in test data | Observed load time | Notes |
-|---|---|---|---|---|
-| Admin Dashboard | `GET /api/players` and `GET /api/volunteers` (full lists, in parallel) | [to be recorded] | [to be recorded] | Counts are computed in the browser |
-| Roster (Player and Coach) | `GET /api/players` (full list) | [to be recorded] | [to be recorded] | |
-| Manage Players | `GET /api/players` (full list) | [to be recorded] | [to be recorded] | |
-| Coach Attendance | `GET /api/players` (full list) and `GET /api/attendance?date=` | [to be recorded] | [to be recorded] | One `POST` per player when saving |
+| Page | Load time |
+|---|---|
+| Dashboard | 6 ms |
+| Players | 9 ms |
+| Volunteers | 4 ms |
+| Attendance | 6 ms |
+| History | 6 ms |
+| Schedule | 7 ms |
+| Stats | 5 ms |
+| Send Notice | 7 ms |
+| Notifications | 8 ms |
+
+**Note:** all pages loaded in under 10 ms with this small sample data. These results show that the pages respond quickly at prototype scale, but they say nothing about behaviour at larger volumes. Each figure comes from a single observation on a local machine with no network latency, so they should be read as indicative rather than as a benchmark. A scalability risk exists at 500 or more records, because the dashboard statistics are computed client-side from the full list endpoints (see Section 3.3). That risk has not yet been measured.
 
 ### 3.3 Known Risk: Client-Side Dashboard Computation
 
@@ -110,15 +117,14 @@ The Coach Attendance page has a related weakness: saving sends one `POST` reques
 
 ### 3.5 Performance Testing Summary
 
-Formal performance testing against the three-second, 500-record target has **not** been carried out, and requirement NFR-02 remains at "Testing planned" in the requirements document. The main known risk and its recommended fix are identified above.
+With small sample data, all nine pages measured in the Network tab loaded in under 10 ms (Section 3.2), so requirement 2.2 (fast responses) is met at prototype scale. Testing against the three-second, 500-record dashboard target has **not** been carried out, and the scalability risk from client-side dashboard computation (Section 3.3) remains open. Requirement NFR-02 remains at "Testing planned" in the requirements document. The main known risk and its recommended fix are identified above.
 
 ## 4. Next Steps
 
 | Priority | Action | Area |
 |---|---|---|
-| 1 | Complete the performance observation log in Section 3.2 with real measurements | Performance |
-| 2 | Seed 500+ records and measure the dashboard against the three-second target | Performance |
-| 3 | Add Volunteer and Coach role tests against Admin-only endpoints, and unauthenticated (401) tests for the Players, Volunteers and Teams endpoints | Security |
-| 4 | Move the JWT key out of `appsettings.json` and replace it with a new key (SEC-01) | Security |
-| 5 | Restrict default account seeding to Development (SEC-02) | Security |
-| 6 | Implement the server-side dashboard summary endpoint | Performance |
+| 1 | Seed 500+ records and measure the dashboard against the three-second target | Performance |
+| 2 | Add Volunteer and Coach role tests against Admin-only endpoints, and unauthenticated (401) tests for the Players, Volunteers and Teams endpoints | Security |
+| 3 | Move the JWT key out of `appsettings.json` and replace it with a new key (SEC-01) | Security |
+| 4 | Restrict default account seeding to Development (SEC-02) | Security |
+| 5 | Implement the server-side dashboard summary endpoint | Performance |
