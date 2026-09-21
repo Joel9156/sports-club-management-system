@@ -98,6 +98,13 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await DbSeeder.SeedAsync(db);
+
+    // Sample roster/schedule/stats for real databases only; the tests run on
+    // InMemory and expect to start empty.
+    if (db.Database.IsRelational())
+    {
+        await DemoDataSeeder.SeedAsync(db);
+    }
 }
 
 app.Run();
