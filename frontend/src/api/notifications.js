@@ -1,10 +1,13 @@
 import apiClient from './client'
 
-// Notifications are read-only from the client's perspective - they're
-// created internally by the backend (e.g. when attendance is recorded), not
-// submitted via POST here. Every endpoint is scoped to the caller's own
-// notifications regardless of role.
+// Reading and marking as read are scoped to the caller's own notifications
+// regardless of role. Some are created by the backend (e.g. when attendance is
+// recorded); Coaches and Admins can also send one to a group (sendNotification).
 
 export const getNotifications = () => apiClient.get('/notifications').then((res) => res.data)
 
 export const markNotificationRead = (id) => apiClient.post(`/notifications/${id}/read`)
+
+// audience: 'Players' | 'Volunteers' | 'Everyone'
+export const sendNotification = (message, audience) =>
+  apiClient.post('/notifications/send', { message, audience }).then((res) => res.data)

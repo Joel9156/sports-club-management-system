@@ -15,6 +15,7 @@ import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 import AdminPlayersPage from './pages/admin/AdminPlayersPage'
 import AdminVolunteersPage from './pages/admin/AdminVolunteersPage'
 import NotificationsPage from './pages/NotificationsPage'
+import SendNotificationPage from './pages/SendNotificationPage'
 import SchedulePage from './pages/SchedulePage'
 import StatsPage from './pages/StatsPage'
 import AttendanceHistoryPage from './pages/AttendanceHistoryPage'
@@ -43,17 +44,20 @@ function AppRoutes() {
       <Route path="/register" element={<RegisterPage />} />
 
       <Route element={<ProtectedRoute roles={['Player', 'Admin']} />}>
-        <Route path="/players/register" element={<PlayerRegisterPage />} />
         <Route path="/players/team" element={<PlayerTeamPage />} />
       </Route>
 
-      {/* Player-only: an Admin has no player record of their own to show. */}
+      {/* Player-only: an Admin has no player record of their own to show or edit. */}
       <Route element={<ProtectedRoute roles={['Player']} />}>
+        <Route path="/players/register" element={<PlayerRegisterPage />} />
         <Route path="/players/attendance" element={<PlayerAttendancePage />} />
       </Route>
 
-      <Route element={<ProtectedRoute roles={['Volunteer', 'Admin']} />}>
+      <Route element={<ProtectedRoute roles={['Volunteer']} />}>
         <Route path="/volunteers/profile" element={<VolunteerProfilePage />} />
+      </Route>
+
+      <Route element={<ProtectedRoute roles={['Volunteer', 'Admin']} />}>
         <Route path="/volunteers/schedule" element={<VolunteerSchedulePage />} />
       </Route>
 
@@ -61,9 +65,12 @@ function AppRoutes() {
         <Route path="/coaches/roster" element={<CoachRosterPage />} />
         <Route path="/coaches/attendance" element={<CoachAttendancePage />} />
         <Route path="/attendance/history" element={<AttendanceHistoryPage />} />
+        <Route path="/notifications/send" element={<SendNotificationPage />} />
       </Route>
 
-      <Route element={<ProtectedRoute roles={['Admin']} />}>
+      {/* Admins and Coaches both see everything; the pages hide the edit and
+          delete controls that only Admins may use (the API enforces it too). */}
+      <Route element={<ProtectedRoute roles={['Admin', 'Coach']} />}>
         <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         <Route path="/admin/players" element={<AdminPlayersPage />} />
         <Route path="/admin/volunteers" element={<AdminVolunteersPage />} />

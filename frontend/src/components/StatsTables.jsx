@@ -34,6 +34,8 @@ function StatsTables({ refreshKey = 0 }) {
   if (!team) return <p>Loading...</p>
 
   const mine = totals.find((t) => t.playerId === myPlayerId)
+  // The player's own row goes first; everyone else keeps the server's order.
+  const rows = mine ? [mine, ...totals.filter((t) => t !== mine)] : totals
 
   return (
     <>
@@ -91,7 +93,7 @@ function StatsTables({ refreshKey = 0 }) {
           </tr>
         </thead>
         <tbody>
-          {totals.map((t) => (
+          {rows.map((t) => (
             <tr key={t.playerId}>
               <td>
                 {t.fullName}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getEvents, createEvent, updateEvent, deleteEvent } from '../../api/events'
 import EventTable from '../../components/EventTable'
+import { useAuth } from '../../context/AuthContext'
 
 const blank = {
   type: 'Match',
@@ -45,6 +46,7 @@ function fromEvent(e) {
 // Admin: add, edit and delete matches and training sessions. Leave the score
 // blank until a match has been played - that's what marks it as upcoming.
 function AdminSchedulePage() {
+  const { user } = useAuth()
   const [events, setEvents] = useState([])
   const [form, setForm] = useState(blank)
   const [error, setError] = useState(null)
@@ -103,10 +105,15 @@ function AdminSchedulePage() {
           <>
             <button type="button" onClick={() => setForm(fromEvent(e))}>
               Edit
-            </button>{' '}
-            <button type="button" onClick={() => handleDelete(e.id)}>
-              Delete
             </button>
+            {user?.role === 'Admin' && (
+              <>
+                {' '}
+                <button type="button" onClick={() => handleDelete(e.id)}>
+                  Delete
+                </button>
+              </>
+            )}
           </>
         )}
       />

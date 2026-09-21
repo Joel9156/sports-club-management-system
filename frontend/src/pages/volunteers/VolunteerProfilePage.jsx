@@ -1,30 +1,61 @@
-import { useState } from 'react'
-import VolunteerForm from '../../components/VolunteerForm'
-import { createVolunteer } from '../../api/volunteers'
+import { useEffect, useState } from 'react'
+import { getVolunteers } from '../../api/volunteers'
+import { useAuth } from '../../context/AuthContext'
 
+// Registering and editing volunteer records is Admin-only, so a Volunteer just
+// sees the record an Admin created for them (matched by account email).
 function VolunteerProfilePage() {
-  const [status, setStatus] = useState(null)
+  const { user } = useAuth()
+  const [profile, setProfile] = useState(null)
+  const [loaded, setLoaded] = useState(false)
   const [error, setError] = useState(null)
-  const [formKey, setFormKey] = useState(0)
 
-  async function handleCreate(volunteer) {
-    setStatus(null)
-    try {
-      await createVolunteer(volunteer)
-      setStatus('success')
-      setFormKey((k) => k + 1)
-    } catch (err) {
-      setStatus('error')
-      setError(err.response?.data?.title ?? 'Could not save profile.')
-    }
-  }
+  useEffect(() => {
+    getVolunteers()
+      .then((list) => setProfile(list.find((v) => v.email === user?.email) ?? null))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoaded(true))
+  }, [user?.email])
+
+  if (error) return <p className="error">Failed to load: {error}</p>
 
   return (
     <div className="page page-narrow">
       <h1>Volunteer Profile</h1>
-      <VolunteerForm key={formKey} onSubmit={handleCreate} submitLabel="Save profile" />
-      {status === 'success' && <p className="success">Profile saved.</p>}
-      {status === 'error' && <p className="error">{error}</p>}
+      {!loaded ? null : profile ? (
+        <table>
+          <tbody>
+            <tr>
+              <th>Name</th>
+              <td>{profile.fullName}</td>
+            </tr>
+            <tr>
+              <th>Email</th>
+              <td>{profile.email}</td>
+            </tr>
+            <tr>
+              <th>Phone</th>
+              <td>{profile.phone}</td>
+            </tr>
+            <tr>
+              <th>Role</th>
+              <td>{profile.role}</td>
+            </tr>
+            <tr>
+              <th>Availability</th>
+              <td>{profile.availability}</td>
+            </tr>
+            <tr>
+              <th>Active</th>
+              <td>{profile.isActive ? 'Yes' : 'No'}</td>
+            </tr>
+          </tbody>
+        </table>
+      ) : (
+        <p className="hint">
+          Your volunteer profile has not been set up yet. Please ask an Admin to add you.
+        </p>
+      )}
     </div>
   )
 }

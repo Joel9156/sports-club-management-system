@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useAuth } from '../../context/AuthContext'
 import VolunteerForm from '../../components/VolunteerForm'
 import {
   getVolunteers,
@@ -8,6 +9,8 @@ import {
 } from '../../api/volunteers'
 
 function AdminVolunteersPage() {
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'Admin' // Coaches get a read-only view
   const [volunteers, setVolunteers] = useState([])
   const [editing, setEditing] = useState(null)
   const [error, setError] = useState(null)
@@ -47,7 +50,7 @@ function AdminVolunteersPage() {
 
   return (
     <div className="page">
-      <h1>Manage Volunteers</h1>
+      <h1>{isAdmin ? 'Manage Volunteers' : 'Volunteers'}</h1>
       {error && <p className="error">{error}</p>}
       <table>
         <thead>
@@ -55,7 +58,7 @@ function AdminVolunteersPage() {
             <th>Name</th>
             <th>Role</th>
             <th>Active</th>
-            <th></th>
+            {isAdmin && <th></th>}
           </tr>
         </thead>
         <tbody>
@@ -64,30 +67,36 @@ function AdminVolunteersPage() {
               <td>{v.fullName}</td>
               <td>{v.role}</td>
               <td>{v.isActive ? 'Yes' : 'No'}</td>
-              <td>
-                <button type="button" onClick={() => setEditing(v)}>
-                  Edit
-                </button>{' '}
-                <button type="button" onClick={() => handleDelete(v.id)}>
-                  Delete
-                </button>
-              </td>
+              {isAdmin && (
+                <td>
+                  <button type="button" onClick={() => setEditing(v)}>
+                    Edit
+                  </button>{' '}
+                  <button type="button" onClick={() => handleDelete(v.id)}>
+                    Delete
+                  </button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
       </table>
 
-      <h2>{editing ? `Edit ${editing.fullName}` : 'Add volunteer'}</h2>
-      <VolunteerForm
-        key={editing?.id ?? 'new'}
-        initial={editing ?? undefined}
-        onSubmit={handleSubmit}
-        submitLabel={editing ? 'Save changes' : 'Add volunteer'}
-      />
-      {editing && (
-        <button type="button" onClick={() => setEditing(null)}>
-          Cancel edit
-        </button>
+      {isAdmin && (
+        <>
+        <h2>{editing ? `Edit ${editing.fullName}` : 'Add volunteer'}</h2>
+        <VolunteerForm
+          key={editing?.id ?? 'new'}
+          initial={editing ?? undefined}
+          onSubmit={handleSubmit}
+          submitLabel={editing ? 'Save changes' : 'Add volunteer'}
+        />
+        {editing && (
+          <button type="button" onClick={() => setEditing(null)}>
+            Cancel edit
+          </button>
+        )}
+        </>
       )}
     </div>
   )

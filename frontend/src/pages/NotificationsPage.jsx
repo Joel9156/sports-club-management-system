@@ -2,11 +2,9 @@ import { useEffect, useState } from 'react'
 import { getNotifications, markNotificationRead } from '../api/notifications'
 
 // Available to every authenticated role - each user only ever sees their own
-// notifications (enforced server-side, not just hidden in the UI). Right now
-// the only thing that generates a notification is having attendance recorded
-// against a Player record whose email matches your account (see
-// AttendanceController) - a stand-in for the fuller "schedule changes, new
-// role assignments" scope described in docs/03-proposed-solution.md.
+// notifications (enforced server-side, not just hidden in the UI). They come
+// from Coaches/Admins sending a notice (SendNotificationPage) or from having
+// attendance recorded (see AttendanceController).
 function NotificationsPage() {
   const [notifications, setNotifications] = useState([])
   const [error, setError] = useState(null)
@@ -34,9 +32,8 @@ function NotificationsPage() {
     <div className="page">
       <h1>Notifications</h1>
       <p className="hint">
-        Notifications are currently generated only when attendance is recorded against a
-        player record matching your account email. Schedule-change and role-assignment
-        notifications described in the proposed solution are not yet implemented.
+        Notices sent by a Coach or Admin, and confirmations when attendance is recorded
+        against a player record matching your account email, appear here.
       </p>
       <table>
         <thead>
