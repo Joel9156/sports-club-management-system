@@ -336,4 +336,88 @@ public class AttendanceControllerTests
         Assert.Single(records!);
         Assert.Equal("2026-03-01", records![0].SessionDate.ToString("yyyy-MM-dd"));
     }
+
+    // DEF-03: a second record for the same player and session date is rejected
+    // with 409 instead of leaving two contradictory rows.
+    [Fact]
+    public async Task RecordAttendance_DuplicatePlayerAndDate_ReturnsConflict()
+    {
+        using var factory = new SportsClubApiFactory();
+        var adminClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+
+        var playerResponse = await adminClient.PostAsJsonAsync("/api/players", new
+        {
+            fullName = "Alex Duplicate",
+            dateOfBirth = "2012-01-01",
+            email = "alex.duplicate@example.com",
+            phone = "555-0701",
+            registrationDate = "2026-01-15",
+            isActive = true,
+        });
+        playerResponse.EnsureSuccessStatusCode();
+        var player = await playerResponse.Content.ReadFromJsonAsync<Player>();
+
+        var first = await adminClient.PostAsJsonAsync("/api/attendance", new
+        {
+            playerId = player!.Id,
+            sessionDate = "2026-04-01",
+            isPresent = true,
+            notes = "",
+        });
+        first.EnsureSuccessStatusCode();
+
+        var second = await adminClient.PostAsJsonAsync("/api/attendance", new
+        {
+            playerId = player.Id,
+            sessionDate = "2026-04-01",
+            isPresent = false,
+            notes = "",
+        });
+
+        Assert.Equal(HttpStatusCode.Conflict, second.StatusCode);
+
+        var records = await adminClient.GetFromJsonAsync<List<Attendance>>(
+            $"/api/attendance?playerId={player.Id}&date=2026-04-01");
+        Assert.Single(records!);
+        Assert.True(records![0].IsPresent);
+    }
+
+    // The uniqueness rule is per (player, date) - the same player on another
+    // date is still fine.
+    [Fact]
+    public async Task RecordAttendance_SamePlayerDifferentDate_ReturnsCreated()
+    {
+        using var factory = new SportsClubApiFactory();
+        var adminClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+
+        var playerResponse = await adminClient.PostAsJsonAsync("/api/players", new
+        {
+            fullName = "Blake Sessions",
+            dateOfBirth = "2012-01-01",
+            email = "blake.sessions@example.com",
+            phone = "555-0702",
+            registrationDate = "2026-01-15",
+            isActive = true,
+        });
+        playerResponse.EnsureSuccessStatusCode();
+        var player = await playerResponse.Content.ReadFromJsonAsync<Player>();
+
+        (await adminClient.PostAsJsonAsync("/api/attendance", new
+        {
+            playerId = player!.Id,
+            sessionDate = "2026-04-01",
+            isPresent = true,
+            notes = "",
+        })).EnsureSuccessStatusCode();
+
+        var second = await adminClient.PostAsJsonAsync("/api/attendance", new
+        {
+            playerId = player.Id,
+            sessionDate = "2026-04-08",
+            isPresent = true,
+            notes = "",
+        });
+
+        Assert.Equal(HttpStatusCode.Created, second.StatusCode);
+    }
 }

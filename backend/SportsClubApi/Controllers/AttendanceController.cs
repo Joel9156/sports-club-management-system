@@ -78,6 +78,13 @@ public class AttendanceController : ControllerBase
             return BadRequest(new { message = "Player does not exist." });
         }
 
+        var alreadyRecorded = await _context.Attendances.AnyAsync(a =>
+            a.PlayerId == attendance.PlayerId && a.SessionDate == attendance.SessionDate);
+        if (alreadyRecorded)
+        {
+            return Conflict(new { message = "Attendance is already recorded for this player on this date." });
+        }
+
         _context.Attendances.Add(attendance);
 
         // Notify the player if their email matches an existing User account.

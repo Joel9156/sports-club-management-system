@@ -32,6 +32,12 @@ public class AppDbContext : DbContext
             .HasForeignKey(a => a.PlayerId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // One attendance record per player per session date (DEF-03) - the
+        // controller checks this first for a friendly 409, this is the backstop.
+        modelBuilder.Entity<Attendance>()
+            .HasIndex(a => new { a.PlayerId, a.SessionDate })
+            .IsUnique();
+
         // Email is the login identifier, so it must be unique.
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Email)
