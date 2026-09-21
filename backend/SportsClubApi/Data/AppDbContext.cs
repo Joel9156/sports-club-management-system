@@ -15,6 +15,8 @@ public class AppDbContext : DbContext
     public DbSet<Attendance> Attendances => Set<Attendance>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<ScheduledEvent> ScheduledEvents => Set<ScheduledEvent>();
+    public DbSet<PlayerStat> PlayerStats => Set<PlayerStat>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -54,5 +56,27 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(n => n.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ScheduledEvent>()
+            .Property(e => e.Type)
+            .HasConversion<string>();
+
+        // Deleting a player or a match removes their stat rows with it.
+        modelBuilder.Entity<PlayerStat>()
+            .HasOne(s => s.Player)
+            .WithMany()
+            .HasForeignKey(s => s.PlayerId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PlayerStat>()
+            .HasOne(s => s.ScheduledEvent)
+            .WithMany()
+            .HasForeignKey(s => s.ScheduledEventId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // A player has at most one stat row per match.
+        modelBuilder.Entity<PlayerStat>()
+            .HasIndex(s => new { s.PlayerId, s.ScheduledEventId })
+            .IsUnique();
     }
 }
