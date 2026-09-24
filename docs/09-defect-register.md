@@ -36,15 +36,15 @@ Root cause analysis will be completed for each confirmed defect. This will help 
 
 **Problem:** A user who registered through the Register page with the Player role did not appear in the Manage Players list.
 
-**Root Cause:** The registration process created a User account but did not automatically create a corresponding Player record. User authentication data and the player roster were handled as separate records, so successful registration with the Player role did not add the user to the Players table used by the Manage Players page.
+**Root Cause:** The registration process created a User account but did not automatically create a corresponding Player record. User authentication and the player roster were handled as separate records, so successful registration with the Player role did not add the user to the Players table used by the Manage Players page.
 
-**Impact:** Newly registered players could successfully create and access their accounts but were missing from the player roster. This caused inconsistent data between registered users and the player management functionality available to administrators.
+**Impact:** Newly registered players could successfully create an account but were missing from the player roster. This caused inconsistent data between registered users and the player management functionality available to administrators.
 
-**Corrective Action:** The registration process was updated so that when a user registers with the Player role, the system checks whether a Player record already exists for the email address. If no record exists, a new Player record is automatically created using the registered user's name and email, with the registration date recorded and the player set as active.
+**Corrective Action:** The registration process was updated so that when a user registers with the Player role, the system checks whether a Player record already exists for the email address. If no record exists, a new Player record is automatically created using the registered user's name and email.
 
-**Preventive Action:** Registration testing should verify that creating a Player account also creates the corresponding Player record and that the player appears in the Manage Players list. Duplicate-record checks should also be included in testing.
+**Preventive Action:** Registration testing should verify that creating a Player account also creates the corresponding Player record. Duplicate-record checks should also be included to prevent multiple Player records for the same email address.
 
-**Retest Result:** Pending verification.
+**Retest Result:** Pass.
 
 ### 4.3 DEF-03 - Duplicate Attendance Records for the Same Player and Session Date
 
