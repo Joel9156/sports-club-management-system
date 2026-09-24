@@ -34,13 +34,17 @@ Root cause analysis will be completed for each confirmed defect. This will help 
 
 ### 4.2 DEF-02 - Registered Player Not Appearing
 
-**Problem:** A user who registers through the Register page with the Player role did not appear in the Manage Players list (or the dashboard's player count).
+**Problem:** A user who registered through the Register page with the Player role did not appear in the Manage Players list.
 
-**Root Cause:** Confirmed by reading commit `4a11fb8`. Creating a login (via `/api/auth/register`) and creating the actual Player roster record (via `POST /api/players`, previously only submitted separately from the Player Registration page) were two unrelated steps. A user who registered an account but never separately submitted the Player Registration form had no Player record at all, so they never appeared anywhere Player records are listed or counted.
+**Root Cause:** The registration process created a User account but did not automatically create a corresponding Player record. User authentication data and the player roster were handled as separate records, so successful registration with the Player role did not add the user to the Players table used by the Manage Players page.
 
-**Corrective Action:** Commit `4a11fb8` ("Auto-create a Player record when a Player account registers (#2)") changed `AuthController.Register` to create a matching Player record (same name/email) immediately when a Player-role account is registered, guarded by an existing-record check so it doesn't create a duplicate if one already exists. `PlayerRegisterPage.jsx` was updated to look up and `PUT`-update that auto-created record (to fill in date of birth/phone) instead of always `POST`-ing a new one.
+**Impact:** Newly registered players could successfully create and access their accounts but were missing from the player roster. This caused inconsistent data between registered users and the player management functionality available to administrators.
 
-**Retest Result:** Pass. Covered by automated tests `Register_WithPlayerRole_CreatesLinkedPlayerRecord` (TC-12) and `Register_WithPlayerRole_DoesNotDuplicateExistingPlayerRecord` (TC-16) in `AuthControllerTests.cs`, both passing.
+**Corrective Action:** The registration process was updated so that when a user registers with the Player role, the system checks whether a Player record already exists for the email address. If no record exists, a new Player record is automatically created using the registered user's name and email, with the registration date recorded and the player set as active.
+
+**Preventive Action:** Registration testing should verify that creating a Player account also creates the corresponding Player record and that the player appears in the Manage Players list. Duplicate-record checks should also be included in testing.
+
+**Retest Result:** Pending verification.
 
 ### 4.3 DEF-03 - Duplicate Attendance Records for the Same Player and Session Date
 
