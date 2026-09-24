@@ -9,4 +9,6 @@ public class Volunteer
     public string Role { get; set; } = string.Empty;
     public string Availability { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true;
+    
+    public ICollection<VolunteerSchedule> Schedules { get; set; } = new List<VolunteerSchedule>();
 }
