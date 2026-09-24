@@ -11,6 +11,7 @@ public class AppDbContext : DbContext
 
     public DbSet<Player> Players => Set<Player>();
     public DbSet<Volunteer> Volunteers => Set<Volunteer>();
+    public DbSet<VolunteerSchedule> VolunteerSchedules => Set<VolunteerSchedule>();wher
     public DbSet<Team> Teams => Set<Team>();
     public DbSet<Attendance> Attendances => Set<Attendance>();
     public DbSet<User> Users => Set<User>();
@@ -78,5 +79,12 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<PlayerStat>()
             .HasIndex(s => new { s.PlayerId, s.ScheduledEventId })
             .IsUnique();
+
+        // A volunteer can have multiple schedule entries.
+       modelBuilder.Entity<VolunteerSchedule>()
+          .HasOne(s => s.Volunteer)
+          .WithMany(v => v.Schedules)
+          .HasForeignKey(s => s.VolunteerId)
+         .OnDelete(DeleteBehavior.Cascade);    
     }
 }
