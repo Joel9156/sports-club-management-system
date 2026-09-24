@@ -25,23 +25,22 @@ The system shall provide notifications for important updates such as team alloca
 ## 2. Non-Functional Requirements
 
 ### 2.1 Security
-The system shall protect player and volunteer information from unauthorised access.
+The system shall restrict access to protected functions based on the user's assigned role. Unauthorised users attempting to access restricted functions shall be denied access.
 
 ### 2.2 Performance
-The system should provide fast responses when users access player, team and attendance information.
+The system shall respond to common operations, including viewing player, volunteer, team and attendance information, within 2 seconds under normal operating conditions.
 
 ### 2.3 Usability
-The system should have a simple and user-friendly interface.
+At least 80% of users participating in usability testing shall be able to complete common tasks, such as registering a player and viewing team information, without assistance.
 
 ### 2.4 Reliability
-The system should maintain accurate and consistent records.
+The system shall correctly save and retrieve player, volunteer, team and attendance records in at least 99% of test transactions without data loss or corruption.
 
 ### 2.5 Scalability
-The system should support increasing numbers of players, volunteers and teams.
+The system shall support at least 100 concurrent users while maintaining a response time of no more than 3 seconds for common operations.
 
 ### 2.6 Maintainability
-The system should be designed so that future updates and improvements can be implemented easily.
-
+All automated tests for core system functionality shall pass before a release is approved. Source code and project documentation shall follow the agreed project structure and naming conventions.
 
 ## 3. Quality Analysis
 
