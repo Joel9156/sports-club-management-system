@@ -11,7 +11,7 @@ public class AppDbContext : DbContext
 
     public DbSet<Player> Players => Set<Player>();
     public DbSet<Volunteer> Volunteers => Set<Volunteer>();
-    public DbSet<VolunteerSchedule> VolunteerSchedules => Set<VolunteerSchedule>();wher
+    public DbSet<VolunteerSchedule> VolunteerSchedules => Set<VolunteerSchedule>();
     public DbSet<Team> Teams => Set<Team>();
     public DbSet<Attendance> Attendances => Set<Attendance>();
     public DbSet<User> Users => Set<User>();
