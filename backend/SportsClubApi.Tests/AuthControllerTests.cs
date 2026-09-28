@@ -103,11 +103,11 @@ public class AuthControllerTests
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    // TC-12: GitHub #2 - registering a Player account must also create a
-    // Player roster record (same name/email) so the new player shows up on
-    // the Admin Players list without a separate, easy-to-skip step.
+    // TC-12: A self-registered Player account is pending until an Admin
+    // approves it - it gets no Player roster record yet, and the response
+    // reports IsApproved = false so the frontend can show a waiting state.
     [Fact]
-    public async Task Register_WithPlayerRole_CreatesLinkedPlayerRecord()
+    public async Task Register_WithPlayerRole_IsPendingWithNoPlayerRecordYet()
     {
         using var factory = new SportsClubApiFactory();
         var client = factory.CreateClient();
@@ -122,12 +122,14 @@ public class AuthControllerTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
+        var auth = await response.Content.ReadFromJsonAsync<AuthResponse>();
+        Assert.False(auth!.IsApproved);
+
         using var scope = factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var player = await context.Players.SingleOrDefaultAsync(p => p.Email == "new-player@example.com");
 
-        Assert.NotNull(player);
-        Assert.Equal("New Player", player!.FullName);
+        Assert.Null(player);
     }
 
     // TC-15: Volunteer accounts don't belong on the player roster.
@@ -157,6 +159,9 @@ public class AuthControllerTests
     // TC-16: Registering shouldn't create a second, conflicting Player record
     // when one already exists for that email (e.g. an admin pre-registered
     // the player on the roster before they created their own login).
+    // Passes trivially for now, since Register no longer touches the Players
+    // table at all (see TC-12) - the real guard against a duplicate now
+    // belongs on the future approval endpoint, and should be re-tested there.
     [Fact]
     public async Task Register_WithPlayerRole_DoesNotDuplicateExistingPlayerRecord()
     {

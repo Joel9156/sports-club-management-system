@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using SportsClubApi.Data;
+using SportsClubApi.Dtos;
 using SportsClubApi.Models;
 
 namespace SportsClubApi.Tests;
@@ -42,11 +43,11 @@ public class NotificationsControllerTests
             email = playerUser.Email,
             password = TestHelpers.DefaultPassword,
         });
-        var auth = await loginResponse.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+        var auth = await loginResponse.Content.ReadFromJsonAsync<AuthResponse>();
 
         var playerClient = factory.CreateClient();
         playerClient.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", auth!["token"]);
+            new AuthenticationHeaderValue("Bearer", auth!.Token);
 
         var notifications = await playerClient.GetFromJsonAsync<List<Notification>>("/api/notifications");
 
