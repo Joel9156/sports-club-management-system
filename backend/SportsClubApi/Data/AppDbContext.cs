@@ -52,6 +52,12 @@ public class AppDbContext : DbContext
             .Property(u => u.Role)
             .HasConversion<string>();
 
+        // Existing rows (seeded/admin-created accounts) default to approved
+        // when this column is added, matching the model's default.
+        modelBuilder.Entity<User>()
+            .Property(u => u.IsApproved)
+            .HasDefaultValue(true);
+
         modelBuilder.Entity<Notification>()
             .HasOne(n => n.User)
             .WithMany()
