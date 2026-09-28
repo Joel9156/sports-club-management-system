@@ -9,7 +9,7 @@ The defect register is used to record defects identified during testing and trac
 | Defect ID | GitHub Issue | Date Found | Feature | Defect Description | Severity | Status | Root Cause | Retest Result |
 |---|---|---|---|---|---|---|---|---|
 | DEF-01 | Issue #1 | 2026-08-16 | Player Management | The Team column in Manage Players displayed the numeric TeamId instead of the team name after a player was assigned to a team. | Medium | Closed (superseded) | `AdminPlayersPage.jsx` rendered the raw `p.teamId` value directly instead of resolving it to the matching team's name | Obsolete - the Team column no longer exists |
-| DEF-02 | Issue #2 | 2026-08-16 | Player Management | A user registered through the Register page with the Player role did not appear in the Manage Players list. | Medium | Closed | Registering a Player account and creating a Player roster record were two separate, easy-to-skip steps (the auth Register form only created a User; a second, distinct submission on the Player Registration page was needed to create the actual Player record) | Pass |
+| DEF-02 | Issue #2 | 2026-08-16 | Player Management | A user registered through the Register page with the Player role did not appear in the Manage Players list. | Medium | Closed (fix superseded) | Registering a Player account and creating a Player roster record were two separate, easy-to-skip steps (the auth Register form only created a User; a second, distinct submission on the Player Registration page was needed to create the actual Player record) | Pass (against the original fix - see note below; the roster record is now created at Admin approval instead) |
 | DEF-03 | (none - found during this review) | 2026-09-18 | Attendance | `POST /api/attendance` accepts a second, contradictory record for the same player and session date instead of rejecting it. | Medium | Closed | No uniqueness check on `(PlayerId, SessionDate)` in `AttendanceController` or the database schema | Pass |
 
 ## 3. Defect Severity
@@ -46,6 +46,8 @@ Root cause analysis will be completed for each confirmed defect. This will help 
 
 **Retest Result:** Pass.
 
+**Update (2026-09-28):** The corrective action above no longer matches the code. `AuthController.Register` was changed to support Admin-approved registration: a self-registered Player/Volunteer account is now created with `IsApproved = false` and no Player/Volunteer record is created at registration time at all - that record will instead be created when an Admin approves the account (approval endpoint in progress, see `05-test-cases.md`'s note under TC-12/TC-16). This is a deliberate design change, not a regression discovered through testing: registering without any review let anyone put themselves straight onto the roster, which was judged too permissive once the system had multiple roles with different levels of trust. Until the approval endpoint ships, a newly registered Player does not appear on the roster at all - reproducing DEF-02's original symptom as a temporary, known gap in an in-progress feature rather than a resolved defect. This entry will be updated again once the approval endpoint is built and retested.
+
 ### 4.3 DEF-03 - Duplicate Attendance Records for the Same Player and Session Date
 
 **Problem:** `POST /api/attendance` accepts more than one attendance record for the same player on the same session date, without rejecting or merging them. Confirmed by direct API testing: posting two records for the same `playerId` and `sessionDate` (one marking the player present, one absent) both returned `201 Created`, leaving two contradictory rows in `GET /api/attendance?playerId=&date=` for that player/date.
@@ -58,4 +60,4 @@ Root cause analysis will be completed for each confirmed defect. This will help 
 
 ## 5. Next Steps
 
-Three confirmed defects are now documented with root cause analysis (DEF-01, DEF-02, DEF-03), meeting the Assessment 2 minimum. DEF-03 has since been fixed and closed (duplicate-check on `POST /api/attendance` plus a unique index on `(PlayerId, SessionDate)`), so no defects are currently open.
+Three confirmed defects are now documented with root cause analysis (DEF-01, DEF-02, DEF-03), meeting the Assessment 2 minimum. DEF-03 has since been fixed and closed (duplicate-check on `POST /api/attendance` plus a unique index on `(PlayerId, SessionDate)`). DEF-02's original fix was superseded by the move to Admin-approved registration (see the update under 4.2); finishing that feature's approval endpoint is now the priority so a registered Player reliably ends up on the roster again, this time only after review.
