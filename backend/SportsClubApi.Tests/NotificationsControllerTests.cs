@@ -117,6 +117,80 @@ public class NotificationsControllerTests
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    // An "Everyone" notice reaches both Players and Volunteers, not just one.
+    [Fact]
+    public async Task Send_ToEveryone_ReachesPlayersAndVolunteers()
+    {
+        using var factory = new SportsClubApiFactory();
+        var player = await TestHelpers.SeedUserAsync(factory, UserRole.Player, "everyone-player@example.com");
+        var volunteer = await TestHelpers.SeedUserAsync(factory, UserRole.Volunteer, "everyone-volunteer@example.com");
+        var adminClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+
+        var response = await adminClient.PostAsJsonAsync("/api/notifications/send", new
+        {
+            message = "Club AGM next Thursday",
+            audience = "Everyone",
+        });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<Dictionary<string, int>>();
+        Assert.Equal(2, result!["sent"]);
+
+        var playerClient = await TestHelpers.LoginAsync(factory, player);
+        Assert.Single((await playerClient.GetFromJsonAsync<List<Notification>>("/api/notifications"))!);
+
+        var volunteerClient = await TestHelpers.LoginAsync(factory, volunteer);
+        Assert.Single((await volunteerClient.GetFromJsonAsync<List<Notification>>("/api/notifications"))!);
+    }
+
+    // A "Volunteers" notice reaches only volunteer accounts, not players.
+    [Fact]
+    public async Task Send_ToVolunteers_ReachesVolunteerAccountsOnly()
+    {
+        using var factory = new SportsClubApiFactory();
+        var player = await TestHelpers.SeedUserAsync(factory, UserRole.Player, "vol-notice-player@example.com");
+        var volunteer = await TestHelpers.SeedUserAsync(factory, UserRole.Volunteer, "vol-notice-volunteer@example.com");
+        var adminClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+
+        var response = await adminClient.PostAsJsonAsync("/api/notifications/send", new
+        {
+            message = "Volunteer briefing at 5pm",
+            audience = "Volunteers",
+        });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<Dictionary<string, int>>();
+        Assert.Equal(1, result!["sent"]);
+
+        var volunteerClient = await TestHelpers.LoginAsync(factory, volunteer);
+        Assert.Single((await volunteerClient.GetFromJsonAsync<List<Notification>>("/api/notifications"))!);
+
+        var playerClient = await TestHelpers.LoginAsync(factory, player);
+        Assert.Empty((await playerClient.GetFromJsonAsync<List<Notification>>("/api/notifications"))!);
+    }
+
+    // The sender's name is prefixed onto the message so recipients know who sent it.
+    [Fact]
+    public async Task Send_PrefixesMessageWithSenderName()
+    {
+        using var factory = new SportsClubApiFactory();
+        var player = await TestHelpers.SeedUserAsync(factory, UserRole.Player, "sender-check@example.com");
+        var coach = await TestHelpers.SeedUserAsync(factory, UserRole.Coach, "coach-sender@example.com");
+        var coachClient = await TestHelpers.LoginAsync(factory, coach);
+
+        await coachClient.PostAsJsonAsync("/api/notifications/send", new
+        {
+            message = "Bring your boots tomorrow",
+            audience = "Players",
+        });
+
+        var playerClient = await TestHelpers.LoginAsync(factory, player);
+        var mine = await playerClient.GetFromJsonAsync<List<Notification>>("/api/notifications");
+
+        Assert.Single(mine!);
+        Assert.StartsWith($"From {coach.FullName}:", mine![0].Message);
+    }
+
     // TC-21: A user cannot mark another user's notification as read.
     [Fact]
     public async Task MarkAsRead_ForAnotherUsersNotification_ReturnsNotFound()

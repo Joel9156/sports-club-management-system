@@ -420,4 +420,16 @@ public class AttendanceControllerTests
 
         Assert.Equal(HttpStatusCode.Created, second.StatusCode);
     }
+
+    // GET by an id that doesn't exist returns 404.
+    [Fact]
+    public async Task GetAttendanceRecord_WithInvalidId_ReturnsNotFound()
+    {
+        using var factory = new SportsClubApiFactory();
+        var adminClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+
+        var response = await adminClient.GetAsync("/api/attendance/999999");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
 }

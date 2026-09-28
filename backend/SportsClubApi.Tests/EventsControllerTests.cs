@@ -132,4 +132,191 @@ public class EventsControllerTests
         Assert.Equal(2, events!.Count);
         Assert.Equal(EventType.Training, events[0].Type); // sorted soonest first (2 Oct before 5 Oct)
     }
+
+    // An event with no location is rejected with 400, for both types.
+    [Fact]
+    public async Task CreateEvent_MissingLocation_ReturnsBadRequest()
+    {
+        using var factory = new SportsClubApiFactory();
+        var adminClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+
+        var response = await adminClient.PostAsJsonAsync("/api/events", new
+        {
+            type = "Training",
+            date = "2026-10-02",
+            location = "",
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    // A training session can't carry an opponent, even without a score.
+    [Fact]
+    public async Task CreateEvent_TrainingWithOpponent_ReturnsBadRequest()
+    {
+        using var factory = new SportsClubApiFactory();
+        var adminClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+
+        var response = await adminClient.PostAsJsonAsync("/api/events", new
+        {
+            type = "Training",
+            date = "2026-10-02",
+            location = "Nixon Park",
+            opponent = "Eden Rovers",
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    // Only one side of the score being set is rejected - it must be both or neither.
+    [Fact]
+    public async Task CreateEvent_MatchWithOnlyOneScoreSide_ReturnsBadRequest()
+    {
+        using var factory = new SportsClubApiFactory();
+        var adminClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+
+        var response = await adminClient.PostAsJsonAsync("/api/events", new
+        {
+            type = "Match",
+            date = "2026-10-05",
+            location = "Lloyd Elsmore Park",
+            opponent = "Eden Rovers",
+            goalsFor = 2,
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    // A negative score is rejected with 400.
+    [Fact]
+    public async Task CreateEvent_MatchWithNegativeScore_ReturnsBadRequest()
+    {
+        using var factory = new SportsClubApiFactory();
+        var adminClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+
+        var response = await adminClient.PostAsJsonAsync("/api/events", new
+        {
+            type = "Match",
+            date = "2026-10-05",
+            location = "Lloyd Elsmore Park",
+            opponent = "Eden Rovers",
+            goalsFor = -1,
+            goalsAgainst = 0,
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    // A valid PUT edits the event (e.g. entering a match result) and returns 204.
+    [Fact]
+    public async Task UpdateEvent_WithValidData_ReturnsNoContentAndPersists()
+    {
+        using var factory = new SportsClubApiFactory();
+        var adminClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+        var match = await ScheduleTestHelpers.CreateMatchAsync(adminClient);
+
+        var response = await adminClient.PutAsJsonAsync($"/api/events/{match.Id}", new
+        {
+            id = match.Id,
+            type = "Match",
+            date = "2026-10-05",
+            location = match.Location,
+            opponent = match.Opponent,
+            goalsFor = 3,
+            goalsAgainst = 1,
+        });
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+
+        var saved = await adminClient.GetFromJsonAsync<ScheduledEvent>($"/api/events/{match.Id}", ScheduleTestHelpers.Json);
+        Assert.Equal(3, saved!.GoalsFor);
+        Assert.Equal(1, saved.GoalsAgainst);
+    }
+
+    // The route id and body id must match, or the request is rejected with 400.
+    [Fact]
+    public async Task UpdateEvent_IdMismatch_ReturnsBadRequest()
+    {
+        using var factory = new SportsClubApiFactory();
+        var adminClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+        var match = await ScheduleTestHelpers.CreateMatchAsync(adminClient);
+
+        var response = await adminClient.PutAsJsonAsync($"/api/events/{match.Id}", new
+        {
+            id = match.Id + 1,
+            type = "Match",
+            date = "2026-10-05",
+            location = match.Location,
+            opponent = match.Opponent,
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    // The same validation rules apply on edit, not just on create.
+    [Fact]
+    public async Task UpdateEvent_MakingItInvalid_ReturnsBadRequest()
+    {
+        using var factory = new SportsClubApiFactory();
+        var adminClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+        var match = await ScheduleTestHelpers.CreateMatchAsync(adminClient);
+
+        var response = await adminClient.PutAsJsonAsync($"/api/events/{match.Id}", new
+        {
+            id = match.Id,
+            type = "Match",
+            date = "2026-10-05",
+            location = match.Location,
+            opponent = "",
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    // Updating an id that doesn't exist returns 404.
+    [Fact]
+    public async Task UpdateEvent_NotFound_ReturnsNotFound()
+    {
+        using var factory = new SportsClubApiFactory();
+        var adminClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+
+        var response = await adminClient.PutAsJsonAsync("/api/events/999999", new
+        {
+            id = 999999,
+            type = "Training",
+            date = "2026-10-02",
+            location = "Nixon Park",
+        });
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    // Deleting an id that doesn't exist returns 404.
+    [Fact]
+    public async Task DeleteEvent_NotFound_ReturnsNotFound()
+    {
+        using var factory = new SportsClubApiFactory();
+        var adminClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+
+        var response = await adminClient.DeleteAsync("/api/events/999999");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    // ?type=Match returns only matches, not training sessions.
+    [Fact]
+    public async Task GetEvents_FilteredByType_ReturnsOnlyMatchingType()
+    {
+        using var factory = new SportsClubApiFactory();
+        var adminClient = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+        await ScheduleTestHelpers.CreateMatchAsync(adminClient);
+        await ScheduleTestHelpers.CreateTrainingAsync(adminClient);
+
+        var events = await adminClient.GetFromJsonAsync<List<ScheduledEvent>>(
+            "/api/events?type=Match", ScheduleTestHelpers.Json);
+
+        Assert.NotNull(events);
+        Assert.Single(events!);
+        Assert.Equal(EventType.Match, events![0].Type);
+    }
 }

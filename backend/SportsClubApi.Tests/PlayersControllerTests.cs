@@ -98,4 +98,40 @@ public class PlayersControllerTests
         Assert.NotNull(updatedPlayer);
         Assert.Equal(team.Id, updatedPlayer!.TeamId);
     }
+
+    // GET by an id that doesn't exist returns 404.
+    [Fact]
+    public async Task GetPlayer_WithInvalidId_ReturnsNotFound()
+    {
+        using var factory = new SportsClubApiFactory();
+        var client = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+
+        var response = await client.GetAsync("/api/players/999999");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    // Registering a second player with an email already on the roster is
+    // rejected with 409, not a duplicate row (Problem #1 - duplicate records).
+    [Fact]
+    public async Task CreatePlayer_WithDuplicateEmail_ReturnsConflict()
+    {
+        using var factory = new SportsClubApiFactory();
+        var client = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+
+        var body = new
+        {
+            fullName = "Original Player",
+            dateOfBirth = "2012-05-04",
+            email = "duplicate-player@example.com",
+            phone = "555-0101",
+            registrationDate = "2026-01-15",
+            isActive = true,
+        };
+        (await client.PostAsJsonAsync("/api/players", body)).EnsureSuccessStatusCode();
+
+        var second = await client.PostAsJsonAsync("/api/players", body with { fullName = "Second Player" });
+
+        Assert.Equal(HttpStatusCode.Conflict, second.StatusCode);
+    }
 }
