@@ -27,5 +27,24 @@ jobs:
       - name: Build
         run: dotnet build backend/SportsClubApi.Tests/SportsClubApi.Tests.csproj --no-restore --configuration Release
 
-      - name: Test
-        run: dotnet test backend/SportsClubApi.Tests/SportsClubApi.Tests.csproj --no-build --configuration Release --logger "console;verbosity=normal"
+      - name: Test with coverage
+        run: >
+          dotnet test backend/SportsClubApi.Tests/SportsClubApi.Tests.csproj
+          --no-build --configuration Release
+          --logger "console;verbosity=normal"
+          --collect:"XPlat Code Coverage"
+          --results-directory ./coverage
+
+      # coverlet.collector (referenced by SportsClubApi.Tests) writes a Cobertura
+      # XML report per run under ./coverage - turn it into a plain-text summary
+      # so coverage shows up directly in the workflow log, not just as a raw XML
+      # artifact nobody opens.
+      - name: Summarize coverage
+        if: always()
+        run: |
+          dotnet tool install -g dotnet-reportgenerator-globaltool
+          reportgenerator \
+            -reports:./coverage/**/coverage.cobertura.xml \
+            -targetdir:./coverage/report \
+            -reporttypes:TextSummary
+          cat ./coverage/report/Summary.txt | tee -a "$GITHUB_STEP_SUMMARY"
