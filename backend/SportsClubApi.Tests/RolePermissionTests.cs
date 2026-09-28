@@ -72,7 +72,7 @@ public class RolePermissionTests
 
         var playerClient = await TestHelpers.LoginAsync(factory, user);
         var response = await playerClient.PutAsJsonAsync($"/api/players/{mine.Id}",
-            PlayerBody(mine, email: "someone-else@example.com", dob: "1999-09-09",
+            PlayerBody(mine, email: "someone-else@example.com", name: "Renamed Self", dob: "1999-09-09",
                 phone: "021-000-0000", isActive: false));
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -81,6 +81,7 @@ public class RolePermissionTests
         Assert.Equal("021-000-0000", saved!.Phone);
         Assert.Equal(new DateOnly(1999, 9, 9), saved.DateOfBirth);
         Assert.Equal("me@example.com", saved.Email);
+        Assert.Equal(mine.FullName, saved.FullName);
         Assert.True(saved.IsActive);
     }
 

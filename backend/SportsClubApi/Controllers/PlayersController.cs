@@ -97,6 +97,7 @@ public class PlayersController : ControllerBase
                 return Forbid();
             }
 
+            player.FullName = existing.FullName;
             player.Email = existing.Email;
             player.TeamId = existing.TeamId;
             player.IsActive = existing.IsActive;
