@@ -81,10 +81,10 @@ public class AppDbContext : DbContext
             .IsUnique();
 
         // A volunteer can have multiple schedule entries.
-       modelBuilder.Entity<VolunteerSchedule>()
-          .HasOne(s => s.Volunteer)
-          .WithMany(v => v.Schedules)
-          .HasForeignKey(s => s.VolunteerId)
-         .OnDelete(DeleteBehavior.Cascade);    
+        modelBuilder.Entity<VolunteerSchedule>()
+           .HasOne(s => s.Volunteer)
+           .WithMany(v => v.Schedules)
+           .HasForeignKey(s => s.VolunteerId)
+          .OnDelete(DeleteBehavior.Cascade);
     }
 }

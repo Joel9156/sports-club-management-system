@@ -10,15 +10,15 @@ public class RolePermissionTests
 {
     private static object PlayerBody(Player p, string? email = null, string? name = null,
         string dob = "2000-01-01", string phone = "555-0000", bool isActive = true) => new
-    {
-        id = p.Id,
-        fullName = name ?? p.FullName,
-        dateOfBirth = dob,
-        email = email ?? p.Email,
-        phone,
-        registrationDate = p.RegistrationDate,
-        isActive,
-    };
+        {
+            id = p.Id,
+            fullName = name ?? p.FullName,
+            dateOfBirth = dob,
+            email = email ?? p.Email,
+            phone,
+            registrationDate = p.RegistrationDate,
+            isActive,
+        };
 
     // TC-37: Registering a player is Admin-only - a Player gets 403.
     [Fact]

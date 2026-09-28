@@ -24,6 +24,14 @@ jobs:
       - name: Restore
         run: dotnet restore backend/SportsClubApi.Tests/SportsClubApi.Tests.csproj
 
+      # `dotnet format` skips a referenced project when pointed at just one
+      # csproj, so both SportsClubApi and SportsClubApi.Tests are checked
+      # explicitly here to cover the whole backend.
+      - name: Check formatting (backend)
+        run: |
+          dotnet format backend/SportsClubApi/SportsClubApi.csproj --verify-no-changes
+          dotnet format backend/SportsClubApi.Tests/SportsClubApi.Tests.csproj --verify-no-changes
+
       - name: Build
         run: dotnet build backend/SportsClubApi.Tests/SportsClubApi.Tests.csproj --no-restore --configuration Release
 
@@ -48,3 +56,28 @@ jobs:
             -targetdir:./coverage/report \
             -reporttypes:TextSummary
           cat ./coverage/report/Summary.txt | tee -a "$GITHUB_STEP_SUMMARY"
+
+  frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: frontend
+
+      # The task that named this step asked for "frontend/sports-club-web" -
+      # this repo's frontend lives at "frontend" instead, so that's what's
+      # checked. `npm run lint` runs oxlint (see frontend/package.json), which
+      # serves the same purpose here as ESLint would.
+      - name: Lint
+        run: npm run lint
+        working-directory: frontend
