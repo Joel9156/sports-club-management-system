@@ -54,14 +54,16 @@ function NavBar() {
       <img src={logo} alt="Mt Eden FC" className="brand-logo" />
       <span className="brand">Mt Eden FC</span>
       {user &&
+        user.isApproved !== false &&
         (NAV_LINKS[user.role] ?? []).map(([to, label]) => (
           <Link key={to} to={to}>
             {label}
           </Link>
         ))}
       {/* Every role has the same own-notifications page, unlike the
-          role-specific links above. */}
-      {user && <Link to="/notifications">Notifications</Link>}
+          role-specific links above. Hidden while pending approval, since
+          nothing else in the app is reachable yet either. */}
+      {user && user.isApproved !== false && <Link to="/notifications">Notifications</Link>}
       <span className="spacer" />
       {user ? (
         <>

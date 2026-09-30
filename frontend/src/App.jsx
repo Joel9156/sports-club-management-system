@@ -14,6 +14,7 @@ import CoachAttendancePage from './pages/coaches/CoachAttendancePage'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 import AdminPlayersPage from './pages/admin/AdminPlayersPage'
 import AdminVolunteersPage from './pages/admin/AdminVolunteersPage'
+import PendingApprovalPage from './pages/PendingApprovalPage'
 import NotificationsPage from './pages/NotificationsPage'
 import SendNotificationPage from './pages/SendNotificationPage'
 import SchedulePage from './pages/SchedulePage'
@@ -92,12 +93,20 @@ function AppRoutes() {
   )
 }
 
+// A self-registered account an Admin hasn't approved yet can log in, but sees
+// only the pending-approval message - nothing else in the app is reachable,
+// regardless of which URL got them here.
+function MainContent() {
+  const { user } = useAuth()
+  return user?.isApproved === false ? <PendingApprovalPage /> : <AppRoutes />
+}
+
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <NavBar />
-        <AppRoutes />
+        <MainContent />
       </AuthProvider>
     </BrowserRouter>
   )
