@@ -1,11 +1,22 @@
 import { useAuth } from '../context/AuthContext'
 
-// Shown instead of the normal app to a self-registered account an Admin
-// hasn't approved yet (see backend/SportsClubApi/Controllers/UsersController.cs).
-// There's nothing to do here but wait or log out - no page is reachable
-// until the account is approved.
+// Shown instead of the normal app to a self-registered account an Admin hasn't
+// approved yet (see backend/SportsClubApi/Controllers/UsersController.cs), or
+// has rejected. There's nothing to do here but wait or log out.
 function PendingApprovalPage() {
   const { user } = useAuth()
+
+  if (user?.isRejected) {
+    return (
+      <div className="page page-narrow">
+        <h1>Registration not approved</h1>
+        <p>
+          Sorry, {user.fullName}, your {user.role.toLowerCase()} registration was not approved.
+          Please contact the club if you think this is a mistake.
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div className="page page-narrow">

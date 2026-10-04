@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { getPendingAccounts, approveAccount } from '../../api/users'
+import { getPendingAccounts, approveAccount, rejectAccount } from '../../api/users'
 
-// Self-registered Player/Volunteer accounts waiting for review. Approving one
-// creates its roster/volunteer record and lets the person into the app.
+// Self-registered Player/Volunteer accounts waiting for a decision. Approving
+// one creates its roster/volunteer record and lets the person into the app.
+// A rejected account can still be approved later.
 function AdminApprovalsPage() {
   const [accounts, setAccounts] = useState([])
   const [error, setError] = useState(null)
@@ -15,13 +16,13 @@ function AdminApprovalsPage() {
 
   useEffect(reload, [])
 
-  async function handleApprove(id) {
+  async function act(action, id) {
     setError(null)
     try {
-      await approveAccount(id)
+      await action(id)
       reload()
     } catch (err) {
-      setError(err.response?.data?.title ?? 'Approval failed.')
+      setError(err.response?.data?.message ?? err.response?.data?.title ?? 'Action failed.')
     }
   }
 
@@ -35,6 +36,7 @@ function AdminApprovalsPage() {
             <th>Name</th>
             <th>Email</th>
             <th>Role</th>
+            <th>Status</th>
             <th></th>
           </tr>
         </thead>
@@ -44,16 +46,25 @@ function AdminApprovalsPage() {
               <td>{a.fullName}</td>
               <td>{a.email}</td>
               <td>{a.role}</td>
+              <td>{a.isRejected ? 'Rejected' : 'Pending'}</td>
               <td>
-                <button type="button" onClick={() => handleApprove(a.id)}>
+                <button type="button" onClick={() => act(approveAccount, a.id)}>
                   Approve
                 </button>
+                {!a.isRejected && (
+                  <>
+                    {' '}
+                    <button type="button" onClick={() => act(rejectAccount, a.id)}>
+                      Reject
+                    </button>
+                  </>
+                )}
               </td>
             </tr>
           ))}
           {accounts.length === 0 && (
             <tr>
-              <td colSpan={4}>No accounts waiting for approval.</td>
+              <td colSpan={5}>No accounts waiting for a decision.</td>
             </tr>
           )}
         </tbody>
