@@ -88,6 +88,7 @@ app.UseCors(FrontendCorsPolicy);
 // Authentication must run before authorization so HttpContext.User is
 // populated (from the JWT) before [Authorize] checks it.
 app.UseAuthentication();
+app.UseMiddleware<SportsClubApi.Middleware.RequireApprovedAccountMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
