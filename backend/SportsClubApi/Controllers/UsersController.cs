@@ -24,20 +24,52 @@ public class UsersController : ControllerBase
     }
 
     // GET: api/users/pending
+    // Every account not yet approved, including rejected ones (IsRejected says which).
     [HttpGet("pending")]
     public async Task<ActionResult<IEnumerable<PendingAccountSummary>>> GetPendingAccounts()
     {
         return await _context.Users
             .Where(u => !u.IsApproved)
             .OrderBy(u => u.FullName)
-            .Select(u => new PendingAccountSummary { Id = u.Id, Email = u.Email, FullName = u.FullName, Role = u.Role })
+            .Select(u => new PendingAccountSummary
+            {
+                Id = u.Id,
+                Email = u.Email,
+                FullName = u.FullName,
+                Role = u.Role,
+                IsRejected = u.IsRejected,
+            })
             .ToListAsync();
+    }
+
+    // POST: api/users/5/reject
+    // Only an unapproved account can be rejected. Kept in the database rather
+    // than deleted, so it can be approved later and the decision is on record.
+    [HttpPost("{id:int}/reject")]
+    public async Task<IActionResult> RejectAccount(int id)
+    {
+        var user = await _context.Users.FindAsync(id);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        if (user.IsApproved)
+        {
+            return BadRequest(new { message = "This account is already approved." });
+        }
+
+        user.IsRejected = true;
+        await _context.SaveChangesAsync();
+
+        return NoContent();
     }
 
     // POST: api/users/5/approve
     // Marks the account approved and, if a matching Player/Volunteer record
     // doesn't already exist for its email, creates one from the account's
     // name/email (mirroring what self-registration used to do immediately).
+    // Also clears a previous rejection, so a rejected account can be approved later.
     [HttpPost("{id:int}/approve")]
     public async Task<IActionResult> ApproveAccount(int id)
     {
@@ -53,6 +85,7 @@ public class UsersController : ControllerBase
         }
 
         user.IsApproved = true;
+        user.IsRejected = false;
 
         if (user.Role == UserRole.Player)
         {

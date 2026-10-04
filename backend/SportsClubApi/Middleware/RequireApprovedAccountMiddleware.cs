@@ -30,15 +30,18 @@ public class RequireApprovedAccountMiddleware
                 return;
             }
 
-            var approved = await db.Users
+            var status = await db.Users
                 .Where(u => u.Id == userId)
-                .Select(u => u.IsApproved)
+                .Select(u => new { u.IsApproved, u.IsRejected })
                 .FirstOrDefaultAsync();
 
-            if (!approved)
+            if (status == null || !status.IsApproved)
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                await context.Response.WriteAsJsonAsync(new { message = "Your account is waiting for approval." });
+                var message = status?.IsRejected == true
+                    ? "Your account registration was not approved. Please contact the club."
+                    : "Your account is waiting for approval.";
+                await context.Response.WriteAsJsonAsync(new { message });
                 return;
             }
         }
