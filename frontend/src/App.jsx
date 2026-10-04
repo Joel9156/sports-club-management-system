@@ -15,6 +15,7 @@ import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 import AdminPlayersPage from './pages/admin/AdminPlayersPage'
 import AdminVolunteersPage from './pages/admin/AdminVolunteersPage'
 import PendingApprovalPage from './pages/PendingApprovalPage'
+import AdminApprovalsPage from './pages/admin/AdminApprovalsPage'
 import NotificationsPage from './pages/NotificationsPage'
 import SendNotificationPage from './pages/SendNotificationPage'
 import SchedulePage from './pages/SchedulePage'
@@ -67,6 +68,10 @@ function AppRoutes() {
         <Route path="/coaches/attendance" element={<CoachAttendancePage />} />
         <Route path="/attendance/history" element={<AttendanceHistoryPage />} />
         <Route path="/notifications/send" element={<SendNotificationPage />} />
+      </Route>
+
+      <Route element={<ProtectedRoute roles={['Admin']} />}>
+        <Route path="/admin/approvals" element={<AdminApprovalsPage />} />
       </Route>
 
       {/* Admins and Coaches both see everything; the pages hide the edit and

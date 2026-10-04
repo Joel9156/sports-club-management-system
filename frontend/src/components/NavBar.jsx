@@ -28,6 +28,7 @@ const NAV_LINKS = {
   ],
   Admin: [
     ['/admin/dashboard', 'Dashboard'],
+    ['/admin/approvals', 'Approvals'],
     ['/admin/players', 'Players'],
     ['/admin/volunteers', 'Volunteers'],
     // Admins are already allowed on the attendance route (see App.jsx) and
