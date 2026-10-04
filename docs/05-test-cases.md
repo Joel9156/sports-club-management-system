@@ -46,6 +46,11 @@
 | TC-42 | Notification | Coach sends a notice to all players | Two player accounts and one volunteer account exist | 1. Coach sends a message with audience "Players" 2. A player and the volunteer view their notifications | Response reports 2 sent; each player sees the message; the volunteer sees none | Functional | Pass |
 | TC-43 | Notification | Player cannot send notices | Logged in as Player | 1. Attempt to send a notice as a Player | 403 Forbidden returned | Non-functional (Security) | Pass |
 | TC-44 | Notification | Blank notice rejected | Coach logged in | 1. Send a notice whose message is only spaces | 400 Bad Request returned | Functional | Pass |
+| TC-45 | Account Approval | Admin approves a pending Player and the roster record is created | Player self-registered (pending), Admin logged in | 1. Admin opens pending list 2. Approves the account 3. Checks Players list and pending list | Player record created with the account's name and email; account no longer pending | Functional | Pass |
+| TC-46 | Account Approval | Approving a Volunteer doesn't duplicate an existing volunteer record | Volunteer record already exists with the same email; Volunteer self-registered (pending) | 1. Admin approves the Volunteer account | Only one volunteer record exists for that email | Functional | Pass |
+| TC-47 | Account Approval | Coach cannot view or approve pending accounts | Coach logged in | 1. Request pending list 2. Attempt to approve an account | 403 Forbidden for both | Non-functional (Security) | Pass |
+| TC-48 | Account Approval | Pending account is blocked from protected endpoints | Player self-registered, not approved | 1. Call a protected endpoint with that account's token | 403 Forbidden with "waiting for approval" message | Non-functional (Security) | Pass |
+| TC-49 | Account Approval | Approval takes effect without re-login | Pending account holds a valid token | 1. Admin approves the account 2. Same token calls a protected endpoint | 200 OK | Functional | Pass |
 
 Manual testing completed on 2026-08-16. All 8 test cases passed.
 2 defects identified and logged as GitHub Issues during exploratory testing.
