@@ -11,6 +11,57 @@ The defect register is used to record defects identified during testing and trac
 | DEF-01 | Issue #1 | 2026-08-16 | Player Management | The Team column in Manage Players displayed the numeric TeamId instead of the team name after a player was assigned to a team. | Medium | Closed (superseded) | `AdminPlayersPage.jsx` rendered the raw `p.teamId` value directly instead of resolving it to the matching team's name | Obsolete - the Team column no longer exists |
 | DEF-02 | Issue #2 | 2026-08-16 | Player Management | A user registered through the Register page with the Player role did not appear in the Manage Players list. | Medium | Closed (fix superseded) | Registering a Player account and creating a Player roster record were two separate, easy-to-skip steps (the auth Register form only created a User; a second, distinct submission on the Player Registration page was needed to create the actual Player record) | Pass (against the original fix - see note below; the roster record is now created at Admin approval instead) |
 | DEF-03 | (none - found during this review) | 2026-09-18 | Attendance | `POST /api/attendance` accepts a second, contradictory record for the same player and session date instead of rejecting it. | Medium | Closed | No uniqueness check on `(PlayerId, SessionDate)` in `AttendanceController` or the database schema | Pass |
+## Final Defect Closure and Residual Risk Analysis
+
+### Purpose
+
+This section evaluates the resolution of defects identified during development and considers whether any remaining risks could affect the quality of the final system.
+
+### Defect Closure Review
+
+| Defect ID | Original Problem | Corrective Action | Closure Evidence Required |
+|---|---|---|---|
+| DEF-01 | The Players list displayed a numeric team ID instead of the team name. | The original team-allocation feature was removed when the project scope changed to a single-team club. | Confirm that the current interface follows the revised requirements and that the original defect is no longer applicable. |
+| DEF-02 | Users registering with the Player role did not appear in the Players list. | The registration workflow was updated to create a corresponding Player record. The later account-approval workflow superseded this implementation. | Verify that an approved Player account produces the expected roster record and appears in the Players list. |
+| DEF-03 | Duplicate attendance records could be created for the same player and session date. | Duplicate prevention was added through application-level validation and a database uniqueness constraint. | Verify that a duplicate attendance submission is rejected and that only one record is stored. |
+
+### Root Cause and Preventive Action Review
+
+**DEF-01: Team information display**
+
+The original problem involved the presentation of an internal team identifier in the user interface. Following the removal of team allocation from the project scope, the original display requirement is no longer applicable.
+
+The preventive action is to review interface functionality whenever project requirements change, ensuring that obsolete features and their associated tests are updated consistently.
+
+**DEF-02: Player registration and roster consistency**
+
+The original registration workflow created an authentication account without automatically creating the corresponding player roster record. This resulted in inconsistent information between registered accounts and the Players list.
+
+The later account-approval workflow changed how player records are created. Regression testing should therefore cover the complete registration, approval and roster-creation process rather than testing only the original registration method.
+
+**DEF-03: Duplicate attendance records**
+
+The attendance implementation previously lacked sufficient protection against duplicate records for the same player and session date.
+
+The corrective approach includes checking for an existing attendance record before saving and enforcing uniqueness at the database level. This provides protection at both the application and data-storage levels.
+
+The preventive action is to retain automated tests that attempt duplicate attendance submissions and verify that the system rejects them.
+
+### Residual Risk Assessment
+
+| Area | Remaining Risk | Recommended Verification |
+|---|---|---|
+| Team management | Historical defect documentation may not reflect the revised single-team scope. | Confirm that the current requirements, interface and historical defect records are consistent. |
+| Player registration | Changes to the approval workflow could reintroduce inconsistencies between User and Player records. | Test registration, approval and player-list visibility together. |
+| Attendance | Future changes to attendance validation could allow duplicate submissions. | Retain duplicate-prevention tests and confirm the database constraint remains effective. |
+
+### Contribution to the Final Release Decision
+
+Defect closure should be based on evidence that the corrective action is effective or that the affected requirement has formally been removed from scope.
+
+A closed defect does not automatically demonstrate that all related functionality is free from risk. Regression testing is needed to confirm that later changes have not reintroduced previously identified problems.
+
+The final release decision should consider unresolved defects, their severity, available retest evidence and any accepted residual risks.
 
 ## 3. Defect Severity
 
