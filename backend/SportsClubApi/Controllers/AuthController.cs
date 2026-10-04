@@ -84,5 +84,6 @@ public class AuthController : ControllerBase
         FullName = user.FullName,
         Role = user.Role.ToString(),
         IsApproved = user.IsApproved,
+        IsRejected = user.IsRejected,
     };
 }
