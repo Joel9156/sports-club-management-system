@@ -38,3 +38,41 @@ This matrix links each requirement to the features that implement it, the test c
 - **NFR-02 and NFR-05:** Only small-scale measurements exist. The 500-record and 100-user targets have not been tested.
 - **NFR-03:** No usability testing with users has been done.
 - **Approved-screen refresh:** A browser tab keeps the approval status it got at login until the user logs in again. The API check is immediate. This is a known limitation (see `05-test-cases.md`).
+
+## 4. Requirements Verification Gap Analysis
+
+### 4.1 Purpose
+
+This analysis identifies requirements that have not been fully verified against their acceptance criteria. It distinguishes between functionality that has passed testing and requirements where additional evidence is still needed.
+
+### 4.2 Identified Verification Gaps
+
+| Requirement | Identified Gap | Impact on Quality | Further Verification Required |
+|---|---|---|---|
+| FR-06 | Dashboard and reporting functions are only partially verified. | Reporting accuracy and completeness have not been fully demonstrated. | Verify the dashboard and reporting outputs against their acceptance criteria. |
+| FR-07 | Notifications for account approval, rejection and team-allocation updates are not implemented. | Users may not receive all notifications originally specified. | Verify the implemented notification functions and document the remaining functionality gaps. |
+| FR-08 | Automated tests pass, but manual UI testing has not been recorded. | The complete user-facing schedule workflow lacks manual verification evidence. | Test schedule viewing and management through the interface. |
+| FR-09 | Automated tests pass, but manual UI testing has not been recorded. | The complete user-facing statistics workflow lacks manual verification evidence. | Test player statistics and team records through the interface. |
+| NFR-01 | Authenticated users can access the full player and volunteer lists through the API. | Access controls do not fully restrict information according to user roles. | Review the accepted SEC-03 security risk and verify the intended access restrictions. |
+| NFR-02 | Performance testing used small sample data only. | Performance under larger workloads has not been demonstrated. | Test the dashboard using the proposed 500-record workload. |
+| NFR-03 | No user-based usability testing has been conducted. | Ease of use has not been verified with representative users. | Conduct usability testing and record task completion results. |
+| NFR-05 | The system has not been tested with increasing numbers of users. | Scalability under concurrent use remains unknown. | Conduct testing against the proposed 100-user target. |
+| NFR-06 | Backend build and tests run in CI, but frontend lint and build are not included. | Frontend quality checks are not fully covered by the automated pipeline. | Verify frontend lint and build results separately or extend CI coverage. |
+
+### 4.3 Verification Priorities
+
+The outstanding requirements should be reviewed according to their potential impact on system quality.
+
+**High priority:** NFR-01 security access restrictions and FR-07 incomplete notification functionality.
+
+**Medium priority:** NFR-02 performance, NFR-03 usability, NFR-05 scalability and NFR-06 frontend quality checks.
+
+**Additional verification:** FR-06 reporting completeness and manual UI verification for FR-08 and FR-09.
+
+These priorities are proposed for the final verification review and do not indicate that additional testing has already been completed.
+
+### 4.4 Verification Conclusion
+
+The Requirements Traceability Matrix demonstrates that many functional requirements have been verified through automated testing. However, the outstanding gaps show that successful automated tests alone do not establish complete verification of every functional and non-functional requirement.
+
+The identified gaps should be considered in the final quality evaluation and release decision. Requirements without sufficient evidence must retain their existing partial or unverified status until additional testing is completed.
