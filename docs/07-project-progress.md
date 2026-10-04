@@ -18,7 +18,7 @@ Several parts of the system are not yet complete. Notifications only cover one t
 
 Manual testing surfaced two defects that remain open. The first (GitHub Issue #1) is that the Players list displays a team's numeric ID rather than its name in the Team column, which makes the data harder to interpret at a glance even though the underlying association is correct. The second (GitHub Issue #2) is that players registered through the self-service Register page are not appearing in the Players list as expected. Both are being tracked for resolution in the next phase of work.
 
-There is also a usability limitation in the current authentication implementation: the JWT is kept in memory rather than persisted to storage, which means that refreshing the browser logs the user out. This was a deliberate trade-off during initial development but will need to be revisited before the system is considered production-ready.
+The JWT was originally kept in memory only, which logged the user out on every browser refresh. It is now kept in `sessionStorage`, so a refresh keeps the user signed in and closing the tab signs them out. The remaining trade-off is that a script injected into the page could read the token, so a production system would move it to an HttpOnly cookie.
 
 Beyond the technical gaps, the team is managing the ordinary logistical challenge of three members working across different personal schedules, which affects how quickly work can be reviewed, integrated, and tested collaboratively.
 
