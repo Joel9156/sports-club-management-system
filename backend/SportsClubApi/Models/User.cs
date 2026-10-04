@@ -13,12 +13,12 @@ public class User
 
     // Self-registered Player/Volunteer accounts start unapproved and only get
     // their roster/volunteer record once an Admin approves them - see
-    // AuthController.Register and the upcoming approval endpoint. Accounts
-    // created any other way (DbSeeder, an Admin creating a Coach account)
-    // default to already approved.
-    //
-    // NOTE: this does not yet restrict API access - login still issues a
-    // fully-privileged token regardless of IsApproved. Gating access on this
-    // flag (not just the roster record) is a follow-up step, not done yet.
+    // UsersController. Accounts created any other way (DbSeeder, an Admin
+    // creating a Coach account) default to already approved. Unapproved
+    // accounts are blocked from the API by RequireApprovedAccountMiddleware.
     public bool IsApproved { get; set; } = true;
+
+    // Set when an Admin rejects an unapproved account. A rejected account can
+    // still be approved later, which clears this flag.
+    public bool IsRejected { get; set; }
 }
