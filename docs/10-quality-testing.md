@@ -49,6 +49,8 @@ Access is controlled by `[Authorize]` attributes on the API controllers, using t
 
 **Coverage.** The original objective was to verify that every role other than Admin is denied Admin-only endpoints. This is now demonstrated for the Player, Volunteer and Coach roles across players, volunteers and account approval (table above). The Coach and Volunteer roles are still not individually tested against `DELETE /api/volunteers/{id}` or `POST /api/teams`; these are protected by the same `[Authorize(Roles = "Admin")]` mechanism as the endpoints that are tested, so the residual risk is considered low (see Section 4).
 
+`SecurityTests` closes the two remaining gaps: `DeleteVolunteer_AsNonAdmin_ReturnsForbiddenAndKeepsRecord` and `CreateTeam_AsNonAdmin_ReturnsForbiddenAndCreatesNothing` each run for the Player, Volunteer and Coach roles and confirm the data is unchanged afterwards. `GetList_WithoutToken_ReturnsUnauthorized` confirms that the players, volunteers, teams, attendance, events and notifications list endpoints all return 401 without a token, and `GetPlayers_WithInvalidToken_ReturnsUnauthorized` confirms a malformed token is treated the same way.
+
 ### 2.3 Account Approval Gate
 
 Role checks alone were not enough once self-registration stopped creating a roster record immediately (see `03-proposed-solution.md`, Account Approval): an account also needs to be approved before it can do anything at all, not just before it reaches a specific Admin-only endpoint. This is enforced by `RequireApprovedAccountMiddleware`, which runs on every authenticated request and checks the account's `IsApproved` flag directly in the database (not from the JWT), so an approval or rejection takes effect immediately without the user logging in again.
@@ -89,7 +91,7 @@ These are risks that were identified during development and are accepted for the
 
 ### 2.6 Security Testing Summary
 
-All automated security tests pass (92 of 92 tests in the backend suite passed on the last full run, 2026-10-11). Authentication is enforced, invalid logins are rejected, role restrictions hold across players, volunteers, schedule, stats and account approval, and the new approval gate (2.3) blocks unapproved and rejected accounts from the rest of the API while taking effect immediately once approved. Testing is incomplete in two respects: `DELETE /api/volunteers/{id}` and `POST /api/teams` are not individually tested against every non-Admin role, and the three risks in Section 2.5 remain open. No penetration testing or dependency vulnerability scanning was carried out.
+All automated security tests pass (107 of 107 tests in the backend suite passed on the last full run). Authentication is enforced, invalid logins are rejected, role restrictions hold across players, volunteers, schedule, stats and account approval, and the new approval gate (2.3) blocks unapproved and rejected accounts from the rest of the API while taking effect immediately once approved. Testing is incomplete in two respects: `DELETE /api/volunteers/{id}` and `POST /api/teams` are not individually tested against every non-Admin role, and the three risks in Section 2.5 remain open. No penetration testing or dependency vulnerability scanning was carried out.
 
 ## 3. Performance Testing
 
@@ -135,16 +137,25 @@ The Coach Attendance page has a related weakness: saving sends one `POST` reques
 3. **Accept a batch of attendance records** in a single request for the Coach Attendance page.
 4. **Re-test against the target.** Seed at least 500 players and volunteers, record the dashboard load time in the browser Network tab before and after the change, and add an automated test for the aggregate endpoint.
 
-### 3.5 Performance Testing Summary
+### 3.5 Automated 500-Record Load Test
 
-With small sample data, all nine pages measured in the Network tab loaded in under 10 ms (Section 3.2), so requirement 2.2 (fast responses) is met at prototype scale. Testing against the three-second, 500-record dashboard target has **not** been carried out, and the scalability risk from client-side dashboard computation (Section 3.3) remains open. Requirement NFR-02 remains at "Testing planned" in the requirements document. The main known risk and its recommended fix are identified above.
+`PerformanceTests.DashboardLists_With500Records_LoadWithinTarget` seeds 500 players and 500 volunteers, then times the two list calls the Admin dashboard makes (`GET /api/players` and `GET /api/volunteers`, issued in parallel) and asserts they finish within the three-second target from `03-proposed-solution.md`. A second test, `DashboardCounts_With500Records_AreCorrect`, checks that the active and inactive counts the dashboard works out from those lists are correct at that size.
+
+| Dataset | Calls timed | Measured | Target | Result |
+|---|---|---|---|---|
+| 500 players, 500 volunteers | `GET /api/players` and `GET /api/volunteers` in parallel | 26 ms | 3,000 ms | Pass |
+
+**Limits of this result.** The test runs against the in-memory database with no network between client and API, so it measures the API's own work and the size of the JSON, not a real SQLite database, browser rendering or network latency. It is a single run on a development machine. It shows the 500-record target is met by a wide margin for the data-loading part, but it does not replace measuring the real dashboard in the browser Network tab.
+
+### 3.6 Performance Testing Summary
+
+With small sample data, all nine pages measured in the Network tab loaded in under 10 ms (Section 3.2), and the automated 500-record test loaded the dashboard's data in 26 ms (Section 3.5), so requirement 2.2 (fast responses) is met at prototype scale and the three-second, 500-record target is met for the data load. The scalability risk from client-side dashboard computation (Section 3.3) remains open, because every record is still downloaded and counted in the browser, and it has not been measured beyond 500 records or against a real database. Requirement NFR-02 remains at "Testing planned" in the requirements document. The main known risk and its recommended fix are identified above.
 
 ## 4. Next Steps
 
 | Priority | Action | Area |
 |---|---|---|
-| 1 | Seed 500+ records and measure the dashboard against the three-second target | Performance |
-| 2 | Test `DELETE /api/volunteers/{id}` and `POST /api/teams` against every non-Admin role | Security |
-| 3 | Move the JWT key out of `appsettings.json` and replace it with a new key (SEC-01) | Security |
-| 4 | Restrict default account seeding to Development (SEC-02) | Security |
-| 5 | Implement the server-side dashboard summary endpoint | Performance |
+| 1 | Measure the real dashboard in the browser against a database with 500+ records, and try larger sizes (for example 5,000) | Performance |
+| 2 | Move the JWT key out of `appsettings.json` and replace it with a new key (SEC-01) | Security |
+| 3 | Restrict default account seeding to Development (SEC-02) | Security |
+| 4 | Implement the server-side dashboard summary endpoint | Performance |
