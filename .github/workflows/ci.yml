@@ -35,6 +35,16 @@ jobs:
       - name: Build
         run: dotnet build backend/SportsClubApi.Tests/SportsClubApi.Tests.csproj --no-restore --configuration Release
 
+      # Smoke tests: the few existing tests that cover the core path (log in,
+      # call a protected endpoint with the token, get refused without one).
+      # They are tagged [Trait("Category", "Smoke")] in the test project and run
+      # first so a broken core flow fails the build fast, before the full suite.
+      - name: Smoke tests
+        run: >
+          dotnet test backend/SportsClubApi.Tests/SportsClubApi.Tests.csproj
+          --no-build --configuration Release
+          --filter "Category=Smoke"
+
       - name: Test with coverage
         run: >
           dotnet test backend/SportsClubApi.Tests/SportsClubApi.Tests.csproj

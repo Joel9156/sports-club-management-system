@@ -49,6 +49,7 @@ public class AttendanceControllerTests
 
     // TC-10: Recording attendance without a bearer token returns 401.
     [Fact]
+    [Trait("Category", "Smoke")]
     public async Task RecordAttendance_WithoutAuth_ReturnsUnauthorized()
     {
         using var factory = new SportsClubApiFactory();

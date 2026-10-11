@@ -12,6 +12,7 @@ public class AuthControllerTests
 {
     // TC-01: Valid login returns a JWT token.
     [Fact]
+    [Trait("Category", "Smoke")]
     public async Task Login_WithValidCredentials_ReturnsOkWithToken()
     {
         using var factory = new SportsClubApiFactory();

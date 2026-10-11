@@ -118,6 +118,7 @@ public class EventsControllerTests
 
     // TC-26: Every role can read the schedule - a Player sees what an Admin added.
     [Fact]
+    [Trait("Category", "Smoke")]
     public async Task GetEvents_AsPlayer_ReturnsScheduledEvents()
     {
         using var factory = new SportsClubApiFactory();
