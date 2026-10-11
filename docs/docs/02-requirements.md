@@ -11,7 +11,9 @@ The system shall allow administrators to register players and store their person
 ### 1.3 Volunteer Management
 The system shall allow administrators to register and manage volunteer information and roles.
 
-### 1.4 Team Allocation
+### 1.4 Team Allocation (Removed from Scope)
+
+Removed: Mt Eden FC operates as a single team, so team allocation function is no longer required.
 The system shall allow authorised users to assign players to appropriate teams.
 
 ### 1.5 Attendance Tracking
@@ -22,6 +24,19 @@ The system shall provide reports and dashboards showing player, volunteer, team 
 
 ### 1.7 Notifications
 The system shall provide notifications for important updates such as team allocations and registration information.
+
+### 1.8 Club Schedule
+The system shall allow authorised users to view a club schedule of matches and training sessions, and allow Coaches and Administrators to add and edit those events.
+
+### 1.9 Player Statistics
+The system shall allow Coaches and Administrators to record each player's goals and assists for a match, and allow authorised users to view player total statistics and the team's match record.
+
+### 1.10 Role-Based Management Permissions
+The system shall restrict each management function to the roles responsible for it. Administrators manage players, volunteers and the schedule (including deleting events); Coaches record attendance, schedule events, enter statistics and send notices; Players may only complete their own player record.
+
+### 1.11 Account Approval
+The system shall require an Administrator to approve self-registered Player and Volunteer accounts before they can use the system. An Administrator can also reject an account, and a rejected account can be approved later.
+
 ## 2. Non-Functional Requirements
 
 ### 2.1 Security
@@ -104,8 +119,9 @@ The system will be assessed using the following quality criteria:
 * Required fields are validated before the record is saved.
 * Existing volunteer information can be updated.
 
-### 5.4 Team Allocation
+### 5.4 Team Allocation (Removed from Scope)
 
+* Removed: Mt Eden FC operates as a single team, so team allocation function is no longer required.
 * An authorised user can assign a player to a team.
 * The player should appear in the correct team after allocation.
 * Invalid or duplicate team allocations should be prevented where appropriate.
@@ -127,6 +143,38 @@ The system will be assessed using the following quality criteria:
 * The system can provide important notifications to relevant users.
 * Notifications should relate to events such as registration, team allocation or other important updates.
 
+### 5.8 Club Schedule
+
+* Only Administrators and Coaches can add or edit schedules.
+* Only Administrators can delete events. 
+* A match requires an opponent, and a training session cannot have a score. Invalid entries are rejected.
+* All authorised users can view the schedule.
+
+### 5.9 Player Statistics
+
+* Only Coaches and Administrators can record statistics.
+* Goals and assists are recorded for each player in each match.
+* Stats can only be recorded for matches, not training sessions.
+* Goals and assists cannot be negative.
+* Duplicate entries for the same player in the same match are not permitted.
+* All roles can view players' totals (matches, goals and assists) and the team's match record (wins, draws and losses).
+
+### 5.10 Role-Based Management Permissions
+
+* Only Administrators can register, edit or delete players and volunteers, and delete a schedule event.
+* Coaches can also add or edit schedule events, record attendance, enter player statistics, and send notices.
+* Players can only update their own player details, not another player's, and only certain fields (not their email, team or active status).
+* Any authorised user can view players, volunteers, the schedule and statistics - only write access is restricted by role.
+
+### 5.11 Account Approval
+
+* A self-registered Player or Volunteer account is created as pending, and no roster or volunteer record exists for it until an Administrator approves it.
+* A pending account cannot use the rest of the system until it is approved.
+* When an Administrator approves an account, the matching Player or Volunteer record is created, and no duplicate is made if one already exists.
+* An Administrator can reject a pending account; the account is kept, not deleted, and remains blocked.
+* A rejected account can later be approved by an Administrator, after which it can use the system.
+* Coaches cannot approve or reject accounts.
+
 ## 6. Requirements Traceability Matrix
 
 The Requirements Traceability Matrix (RTM) links the main system requirements with their quality expectations and testing activities. The matrix is updated as testing progresses so the team can track which requirements have been tested, fixed or still require further testing.
@@ -140,6 +188,7 @@ The Requirements Traceability Matrix (RTM) links the main system requirements wi
 | FR-05 | Coaches or administrators can record attendance | Functional | Reliability, Accuracy | Attendance recording testing | Automated tests to be added |
 | FR-06 | Users can view reports and dashboards | Functional | Performance, Usability | Report and dashboard testing | Testing in progress |
 | FR-07 | The system provides relevant notifications | Functional | Reliability | Notification testing | Testing pending |
+
 | NFR-01 | Sensitive information is protected from unauthorised access | Non-functional | Security | Role-based access testing | Further security testing planned |
 | NFR-02 | The system responds within an acceptable time | Non-functional | Performance | Performance testing | Testing planned |
 | NFR-03 | The interface is simple and easy to understand | Non-functional | Usability | User acceptance testing | Testing planned |
