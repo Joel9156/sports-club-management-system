@@ -16,11 +16,11 @@ A web-based GUI was chosen instead of a desktop application or command-line tool
 ## Player Registration 
 This feature directly addresses the duplicate player records and wrong team allocation issues identified in the Problem Definition. Currently, player data is entered manually across multiple spreadsheets with no shared validation, leading to duplicate entries and inconsistent information reaching coaches and administrators.
 
-The registration form allows player (or parents/guardians, where the player is a minor) to submit their details online. The system validates entries at the point of submission before the record is saved to the central database. Where the registrant is under 18, the form additionally requires parent/guardian contact information as a mandatory field. (Preferred sport and age category are not captured by the current `Player` model or registration form - see the Team Allocation section below for why team-based fields are no longer part of this feature's scope. Guardian contact information for minors is likewise not yet implemented, independent of that scope change - see `frontend/src/pages/players/PlayerRegisterPage.jsx`.)
+A Player signs up online with their name, email and password. Self-registration no longer creates a roster record immediately: the account is held pending until an Administrator approves it (see the Account Approval section below), at which point the Player record is created from the account's name and email. Once approved, the player can log in and complete the remaining details - date of birth and phone - themselves. (Preferred sport and age category are not captured by the current `Player` model or registration form - see the Team Allocation section below for why team-based fields are no longer part of this feature's scope. Guardian contact information for minors is likewise not yet implemented, independent of that scope change - see `frontend/src/pages/players/PlayerRegisterPage.jsx`.)
 
-By validating data once at the point of entry and storing it in a single database, the system removes the duplication etries problem at its source rather than relying on manual cross-checking afterwards.
+By creating at most one roster record per email, and only once an Administrator has reviewed the account, the system removes the duplicate-records problem at its source rather than relying on manual cross-checking afterwards.
 
-**Related quality attributes:** data accuracy(validation and duplicate detection at entry), usability (guided form reduces entry errors), reliability (single source of truth for player records).
+**Related quality attributes:** data accuracy (no roster record exists until an Administrator has reviewed the account), usability (a guided form reduces entry errors), reliability (single source of truth for player records).
 
 ## Volunteer Management
 This feature addresses the problem of volunteer information going missing or being incomplete, as identified in the Problem Definition. Volunteer details are currently collected through emails and spreadsheets with no consistent format or required fields, meaning coaches and administrators often lack updated information about volunteer roles and availivility.
@@ -28,6 +28,14 @@ This feature addresses the problem of volunteer information going missing or bei
 The system provides a structured volunteer profile form covering contact details, assigned role, and availability. Required-filed validation ensures a profile cannot be saved as incomplete. Administrators and coaches can view a centralized, searchable list of volunteers, replacing the need to track this information across separate documents.
 
 **Related quality attributes:** reliablity (required-field validation prevents incomplete records), usability (centralized, searchable volunteer list for coaches and admins).
+
+## Account Approval
+
+Self-registration used to create a Player's roster record immediately on sign-up (fixing GitHub Issue #2, see `09-defect-register.md` DEF-02). That was an acceptable quick fix at the time, but it meant anyone who signed up was added straight to the official roster with no review - too permissive once the system had multiple roles and real administrative responsibility attached to appearing on that roster.
+
+The prototype now requires an Administrator to approve a self-registered Player or Volunteer account before it is added to the roster or volunteer list, or can access anything else in the system. An Administrator reviews each pending account on the "Pending Approvals" page and either approves it - which creates the matching Player or Volunteer record from the account's name and email - or rejects it. A rejected account is kept, not deleted, so an Administrator can still approve it later if the decision changes.
+
+**Related quality attributes:** security (no account reaches the roster or the rest of the system without review), data accuracy (roster records are only created once reviewed, rather than straight from an unverified self-submission), reliability (a rejected account is not lost - it can still be revisited).
 
 ## Team Allocation
 This feature originally addressed the problem of players ending up on the wrong team due to the lack of a shared, validated data source, as identified in the Problem Definition. Team assignment was previously done manually, often cross-referencing multiple spreadsheets, which created opportunities for a player to be placed in an incorrect age group or team.
@@ -67,3 +75,11 @@ Secure login underpins the role-based access described throughout this document.
 The prototype implements authentication using JWT (JSON Web Tokens). On login, users receive a token identifying their role, which determines what data and actions they can access - for example, only Administrators can view the full dashboard, and only Coaches (and Administrators) can mark attendance.
 
 **Related quality attributes:** security (role-based access control limits data exposure), reliability (consistent enforcement of access rules across the system).
+
+## Role-Based Management Permissions
+
+As the system grew beyond the four roles' basic read access, it became necessary to also separate which role manages what, rather than leaving every management action open to any logged-in Coach or Administrator.
+
+Administrators manage players and volunteers, and are the only role that can delete a schedule event or approve/reject a pending account. Coaches manage the day-to-day running of the club: adding and editing the schedule, recording attendance, entering match statistics, and sending notices to players or volunteers. A Player may update only their own player record, and only the fields an Administrator hasn't already set (date of birth and phone) - not another player's record, nor their own team or active status.
+
+**Related quality attributes:** security (write access matches each role's actual responsibility, reducing the chance of an unintended or unauthorised change), maintainability (permission boundaries are enforced centrally through the API's role checks rather than left to the frontend alone).
