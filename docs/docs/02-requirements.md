@@ -177,22 +177,5 @@ The system will be assessed using the following quality criteria:
 
 ## 6. Requirements Traceability Matrix
 
-The Requirements Traceability Matrix (RTM) links the main system requirements with their quality expectations and testing activities. The matrix is updated as testing progresses so the team can track which requirements have been tested, fixed or still require further testing.
-
-| ID | Requirement | Type | Quality Attribute | Planned Test | Current Status |
-|---|---|---|---|---|---|
-| FR-01 | Users can securely log in to the system | Functional | Security | Valid and invalid login testing | Tested |
-| FR-02 | Administrators can register and manage players | Functional | Accuracy, Usability | Player registration testing | Issue #2 fix reported as merged; verification pending |
-| FR-03 | Administrators can register and manage volunteers | Functional | Accuracy, Usability | Volunteer management testing | Tested |
-| FR-04 | Authorised users can allocate players to teams | Functional | Correctness | Team allocation testing | Tested |
-| FR-05 | Coaches or administrators can record attendance | Functional | Reliability, Accuracy | Attendance recording testing | Automated tests to be added |
-| FR-06 | Users can view reports and dashboards | Functional | Performance, Usability | Report and dashboard testing | Testing in progress |
-| FR-07 | The system provides relevant notifications | Functional | Reliability | Notification testing | Testing pending |
-
-| NFR-01 | Sensitive information is protected from unauthorised access | Non-functional | Security | Role-based access testing | Further security testing planned |
-| NFR-02 | The system responds within an acceptable time | Non-functional | Performance | Performance testing | Testing planned |
-| NFR-03 | The interface is simple and easy to understand | Non-functional | Usability | User acceptance testing | Testing planned |
-| NFR-04 | Records remain accurate and consistent | Non-functional | Reliability | Data integrity testing | Further testing planned |
-| NFR-05 | The system can support increasing numbers of users and records | Non-functional | Scalability | Scalability testing | Testing planned |
-| NFR-06 | The system can be updated and maintained efficiently | Non-functional | Maintainability | Code and documentation review | Ongoing |
+The Requirements Traceability Matrix (RTM) links each requirement above to the features that implement it, the test cases that verify it, their results and any defects. Keeping one RTM up to date is clearer than maintaining the same information in two places, so the full matrix - including FR-08 to FR-11 and the current status of every requirement - is kept in `06-traceability-matrix.md`, not duplicated here.
 
