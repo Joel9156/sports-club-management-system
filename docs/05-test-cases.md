@@ -1,5 +1,32 @@
 # Test Cases
 
+## Test Execution Summary
+
+53 test cases are documented below (TC-01 to TC-53), covering every requirement in `06-traceability-matrix.md`. All 53 were planned, executed and passing as of the last full run (2026-10-11); none are failing, blocked or not run.
+
+| Planned | Executed | Passed | Failed | Blocked | Not run |
+|---|---|---|---|---|---|
+| 53 | 53 | 53 | 0 | 0 | 0 |
+
+**By test level** (see `04-test-strategy.md` §3 for the definitions):
+
+| Level | How it's run | Example TCs |
+|---|---|---|
+| Unit | Validation logic exercised through the API (no separate unit test project) | TC-04, TC-24, TC-25, TC-31 |
+| Integration | xUnit + `WebApplicationFactory`, real HTTP calls through the full pipeline into an in-memory database | TC-07, TC-09 to TC-21, TC-22 to TC-53 |
+| System | Manual, end to end through the running frontend and backend together | TC-01, TC-03, TC-05, TC-06, TC-08 (2026-08-16); the approval flow TC-45/48/50/51 (2026-10-04) |
+| User acceptance | Informal - a team member acting as each role (Admin, Coach, Player, Volunteer) | Covered alongside system testing above, not separately recorded |
+
+**By scenario type:** both positive and negative cases are covered throughout - for example TC-01 (valid login) vs TC-02 (invalid login); TC-22 (valid match) vs TC-24 (missing opponent, a boundary/invalid-input case) and TC-25 (invalid training score); TC-28 (duplicate stats, an error-handling case) and TC-31 (negative numbers, a boundary case). The non-functional column marks each security test explicitly; TC-02, TC-10, TC-14 and TC-17/30/37/38/40/41/43/47/48/50/53 are all negative-path security checks (wrong credentials, missing auth, wrong role).
+
+**Automated vs manual:** 53 of the 92 automated backend tests (`dotnet test`, xUnit) carry a `// TC-xx` comment tying them to one of the rows below; the other 39 are additional edge cases (e.g. extra validation and boundary checks) added for regression safety but not yet written up as their own documented test case. The frontend has no automated test suite - its behaviour is checked through the TCs here and the manual passes noted above.
+
+**Failed tests and corrective action:** no test case in the table below is currently failing. Three defects were found while testing earlier TCs and have since been fixed and retested (see `09-defect-register.md`): DEF-01 (TC-06, team name shown as an ID - resolved by removing the team-management feature), DEF-02 (TC-08, a self-registered player didn't appear on the roster - fixed, then superseded by the Admin-approval flow in FR-11), and DEF-03 (found during a security review of attendance, not a numbered TC at the time - fixed with a uniqueness check, now covered by TC-19 and automated tests). Every change in this project has been followed by a full `dotnet test` run (92 tests) before committing, which is the regression check for this backend; the frontend is checked by `npm run build` and `npm run lint` instead, since it has no automated tests of its own.
+
+**Remaining quality risks** (detailed in `10-quality-testing.md`): no record-level read scoping (SEC-03), the JWT signing key and seeded default passwords are unsuitable for production (SEC-01, SEC-02), the dashboard's performance at 500+ records is untested (NFR-02/05), and no usability testing with real users has been run (NFR-03).
+
+## Test Cases
+
 | TC ID | Feature | Test Case | Precondition | Steps | Expected Result | Type | Result |
 |-------|---------|-----------|--------------|-------|-----------------|------|--------|
 | TC-01 | Authentication | Valid login | User account exists | 1. Go to login page 2. Enter valid email/password 3. Click login | User is logged in and redirected to dashboard | Functional | Pass |
