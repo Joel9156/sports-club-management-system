@@ -47,15 +47,36 @@ jobs:
       # XML report per run under ./coverage - turn it into a plain-text summary
       # so coverage shows up directly in the workflow log, not just as a raw XML
       # artifact nobody opens.
+      #
+      # Excluded from the numbers (code the tests aren't meant to cover):
+      #   SportsClubApi.Migrations.*          generated EF Core migrations
+      #   SportsClubApi.Data.DbSeeder         startup seeding of default accounts
+      #   SportsClubApi.Data.DemoDataSeeder   sample data, skipped on the test DB
+      #   Program                             app startup / wiring
+      # Without this filter the report counts them and line coverage reads ~22%.
+      #
+      # Quality gate: the step fails if line coverage (after the exclusions
+      # above) is below COVERAGE_MIN_LINE percent.
       - name: Summarize coverage
         if: always()
+        env:
+          COVERAGE_MIN_LINE: 85
         run: |
           dotnet tool install -g dotnet-reportgenerator-globaltool
           reportgenerator \
             -reports:./coverage/**/coverage.cobertura.xml \
             -targetdir:./coverage/report \
-            -reporttypes:TextSummary
+            -reporttypes:TextSummary \
+            "-classfilters:-SportsClubApi.Migrations.*;-SportsClubApi.Data.DbSeeder;-SportsClubApi.Data.DemoDataSeeder;-Program"
           cat ./coverage/report/Summary.txt | tee -a "$GITHUB_STEP_SUMMARY"
+
+          line=$(grep -m1 "Line coverage:" ./coverage/report/Summary.txt | grep -oE "[0-9]+(\.[0-9]+)?")
+          if awk -v v="$line" -v min="$COVERAGE_MIN_LINE" 'BEGIN { exit !(v + 0 >= min + 0) }'; then
+            echo "Line coverage ${line}% meets the ${COVERAGE_MIN_LINE}% minimum." | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Line coverage ${line}% is below the ${COVERAGE_MIN_LINE}% minimum." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
 
   frontend:
     runs-on: ubuntu-latest
@@ -80,4 +101,8 @@ jobs:
       # serves the same purpose here as ESLint would.
       - name: Lint
         run: npm run lint
+        working-directory: frontend
+
+      - name: Build
+        run: npm run build
         working-directory: frontend
