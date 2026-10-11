@@ -21,14 +21,19 @@ Access is controlled by `[Authorize]` attributes on the API controllers, using t
 
 | Endpoint | Allowed roles |
 |---|---|
-| `GET` on Players, Teams, Volunteers, Attendance | Any authenticated user |
-| `POST /api/players` | Admin, Player |
-| `PUT` / `DELETE /api/players/{id}` | Admin only |
-| `POST /api/volunteers` | Admin, Volunteer |
-| `PUT` / `DELETE /api/volunteers/{id}` | Admin only |
+| `GET` on Players, Teams, Volunteers, Attendance, Events, PlayerStats, Stats | Any authenticated (and approved) user |
+| `POST /api/players` | Admin only |
+| `PUT /api/players/{id}` | Admin, or a Player updating only their own record (date of birth and phone only) |
+| `DELETE /api/players/{id}` | Admin only |
+| `POST` / `PUT` / `DELETE /api/volunteers` | Admin only |
 | `POST /api/teams` | Admin only |
 | `POST /api/attendance` | Admin, Coach |
-| `POST /api/auth/register` | Public, but only the Player and Volunteer roles can be requested |
+| `POST` / `PUT /api/events` | Admin, Coach |
+| `DELETE /api/events/{id}` | Admin only |
+| `POST` / `PUT` / `DELETE /api/playerstats` | Admin, Coach |
+| `POST /api/notifications/send` | Admin, Coach |
+| `GET /api/users/pending`, `POST .../approve`, `POST .../reject` | Admin only |
+| `POST /api/auth/register` | Public, but only the Player and Volunteer roles can be requested, and the account starts unapproved (see Section 2.3) |
 
 **Automated test evidence**
 
@@ -38,10 +43,25 @@ Access is controlled by `[Authorize]` attributes on the API controllers, using t
 | TC-17 | `AttendanceControllerTests.RecordAttendance_AsPlayerRole_ReturnsForbidden` | A Player cannot record attendance (Admin/Coach only); 403 Forbidden is returned | Pass |
 | TC-14 | `AuthControllerTests.Register_WithAdminRole_ReturnsBadRequest` | Self-registration cannot be used to obtain an Admin account; 400 Bad Request is returned and no account is created | Pass |
 | TC-21 | `NotificationsControllerTests.MarkAsRead_ForAnotherUsersNotification_ReturnsNotFound` | A user cannot act on another user's notification; 404 Not Found is returned | Pass |
+| TC-37, TC-38 | `RolePermissionTests.CreatePlayer_AsPlayer_ReturnsForbidden`, `CreateVolunteer_AsVolunteer_ReturnsForbidden` | A Player/Volunteer cannot register themselves onto the roster; 403 Forbidden | Pass |
+| TC-40, TC-41 | `RolePermissionTests.UpdatePlayer_AnotherPlayersRecord_ReturnsForbidden`, `EditOrDeletePlayer_AsCoach_ReturnsForbidden` | A Player cannot edit another player's record, and a Coach cannot edit or delete any player record; 403 Forbidden | Pass |
+| TC-47, TC-53 | `UsersControllerTests.PendingAccounts_AsCoach_ReturnsForbidden`, `RejectAccountTests.Reject_AsCoach_ReturnsForbidden` | A Coach cannot view, approve or reject pending accounts; 403 Forbidden | Pass |
 
-**Coverage gap.** The test objective was to verify that Player, Volunteer and Coach roles cannot reach Admin-only endpoints. Only the **Player** role is currently exercised against an Admin-only endpoint (TC-07). The Volunteer and Coach roles are not tested against `PUT`/`DELETE` on players or volunteers, or against `POST /api/teams`. These endpoints are protected by the same `[Authorize(Roles = "Admin")]` mechanism, so the risk is considered low, but it has not been demonstrated by a test. Adding one test per remaining role and per Admin-only endpoint is recommended (see Section 4).
+**Coverage.** The original objective was to verify that every role other than Admin is denied Admin-only endpoints. This is now demonstrated for the Player, Volunteer and Coach roles across players, volunteers and account approval (table above). The Coach and Volunteer roles are still not individually tested against `DELETE /api/volunteers/{id}` or `POST /api/teams`; these are protected by the same `[Authorize(Roles = "Admin")]` mechanism as the endpoints that are tested, so the residual risk is considered low (see Section 4).
 
-### 2.3 Authentication
+### 2.3 Account Approval Gate
+
+Role checks alone were not enough once self-registration stopped creating a roster record immediately (see `03-proposed-solution.md`, Account Approval): an account also needs to be approved before it can do anything at all, not just before it reaches a specific Admin-only endpoint. This is enforced by `RequireApprovedAccountMiddleware`, which runs on every authenticated request and checks the account's `IsApproved` flag directly in the database (not from the JWT), so an approval or rejection takes effect immediately without the user logging in again.
+
+| Test case | Automated test | What it verifies | Result |
+|---|---|---|---|
+| TC-48 | `ApprovalAccessTests.UnapprovedAccount_IsBlockedFromProtectedEndpoints` | A pending account with a valid token still gets 403 Forbidden on a protected endpoint | Pass |
+| TC-49 | `ApprovalAccessTests.Approval_TakesEffectWithoutReLogin` | The same token works immediately once an Admin approves the account | Pass |
+| TC-45, TC-46 | `UsersControllerTests.ApprovePlayer_CreatesPlayerRecord_AndLeavesPending`, `ApproveVolunteer_WithExistingRecord_DoesNotDuplicateIt` | Approving creates the roster/volunteer record exactly once | Pass |
+| TC-50 | `RejectAccountTests.RejectPendingAccount_BlocksAccessAndMarksRejected` | A rejected account stays blocked and is marked as rejected | Pass |
+| TC-51, TC-52 | `RejectAccountTests.RejectedAccount_CanBeApprovedLater`, `Reject_ApprovedOrUnknownAccount_IsRejected` | A rejected account can be approved later; an already-approved or unknown account cannot be rejected | Pass |
+
+### 2.4 Authentication
 
 | Test case | Automated test | What it verifies | Result |
 |---|---|---|---|
@@ -57,7 +77,7 @@ Supporting design points, verified by code review rather than by automated test:
 - `AttendanceController`, `PlayersController`, `TeamsController`, `VolunteersController` and `NotificationsController` are all marked `[Authorize]` at class level. However, the 401 behaviour is only covered by an automated test on the attendance endpoint (TC-10); the other controllers rely on the same attribute but are not individually tested.
 - On the frontend, the login (including the JWT) is kept in `sessionStorage`, so it persists across a page refresh but is cleared when the browser tab is closed. A saved token that has expired is discarded on load. `localStorage` is not used, so the login does not outlive the tab. The trade-off is that a token in browser storage can be read by any script running on the page, so it would be exposed if the application ever had a cross-site scripting (XSS) vulnerability.
 
-### 2.4 Known Security Risks
+### 2.5 Known Security Risks
 
 These are risks that were identified during development and are accepted for the prototype. They should be resolved before any real deployment.
 
@@ -67,9 +87,9 @@ These are risks that were identified during development and are accepted for the
 | SEC-02 | **Fixed default credentials.** `DbSeeder` creates an Admin and a Coach account with a known password on every startup, in every environment. | High | Intended for local demo use only, and documented in `backend/README.md`. | Seed only in the Development environment, or read the initial password from configuration. |
 | SEC-03 | **No per-record scoping.** Access control is at route level only. Any authenticated user, including a Player or Volunteer, can read the full lists of players (including date of birth and phone number), volunteers and attendance. This only partly meets requirement 2.1. | Medium | Deferred deliberately (see the comment in `PlayersController.cs`). | Scope reads so a Player sees only their own record and a Coach only relevant records. |
 
-### 2.5 Security Testing Summary
+### 2.6 Security Testing Summary
 
-All automated security tests pass (49 of 49 tests in the backend suite passed on the last full run). Authentication is enforced, invalid logins are rejected, and the tested role restrictions hold. Testing is incomplete in two respects: the Volunteer and Coach roles are not tested against Admin-only endpoints, and the three risks in Section 2.4 remain open. No penetration testing or dependency vulnerability scanning was carried out.
+All automated security tests pass (92 of 92 tests in the backend suite passed on the last full run, 2026-10-11). Authentication is enforced, invalid logins are rejected, role restrictions hold across players, volunteers, schedule, stats and account approval, and the new approval gate (2.3) blocks unapproved and rejected accounts from the rest of the API while taking effect immediately once approved. Testing is incomplete in two respects: `DELETE /api/volunteers/{id}` and `POST /api/teams` are not individually tested against every non-Admin role, and the three risks in Section 2.5 remain open. No penetration testing or dependency vulnerability scanning was carried out.
 
 ## 3. Performance Testing
 
@@ -124,7 +144,7 @@ With small sample data, all nine pages measured in the Network tab loaded in und
 | Priority | Action | Area |
 |---|---|---|
 | 1 | Seed 500+ records and measure the dashboard against the three-second target | Performance |
-| 2 | Add Volunteer and Coach role tests against Admin-only endpoints, and unauthenticated (401) tests for the Players, Volunteers and Teams endpoints | Security |
+| 2 | Test `DELETE /api/volunteers/{id}` and `POST /api/teams` against every non-Admin role | Security |
 | 3 | Move the JWT key out of `appsettings.json` and replace it with a new key (SEC-01) | Security |
 | 4 | Restrict default account seeding to Development (SEC-02) | Security |
 | 5 | Implement the server-side dashboard summary endpoint | Performance |
