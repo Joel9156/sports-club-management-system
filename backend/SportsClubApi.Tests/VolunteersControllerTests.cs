@@ -171,4 +171,40 @@ public class VolunteersControllerTests
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
+
+    [Fact]
+    public async Task UpdateVolunteer_IdMismatchForMissingResource_ReturnsBadRequest()
+    {
+        using var factory = new SportsClubApiFactory();
+        var client = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+
+        var response = await client.PutAsJsonAsync("/api/volunteers/999999", new
+        {
+            id = 1000000,
+            fullName = "Ghost",
+            email = "ghost@example.com",
+            phone = "555-0000",
+            role = "Manager",
+            availability = "Never",
+            isActive = true,
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CreateVolunteer_WithMalformedJson_ReturnsBadRequest()
+    {
+        using var factory = new SportsClubApiFactory();
+        var client = await TestHelpers.CreateAuthenticatedClientAsync(factory, UserRole.Admin);
+
+        using var content = new StringContent(
+            "{",
+            System.Text.Encoding.UTF8,
+            "application/json");
+
+        var response = await client.PostAsync("/api/volunteers", content);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 }
